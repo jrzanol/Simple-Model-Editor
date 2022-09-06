@@ -3,13 +3,22 @@
 
 #include "CWindowGL.h"
 
-SliderInfo CWindowGL::g_SliderInfo(400, 200, 0, 1.f, 1.f);
+SliderInfo CWindowGL::g_SliderInfo(0.f, 0.f, 0, 1.f, 1.f);
 
-const char* CWindowGL::g_VertexShader = "#version 430\n"
-                                        "in vec3 pos;"
-                                        "void main() {"
-                                            "gl_Position = vec4(pos, 1);"
-                                        "}";
+const char* CWindowGL::g_VertexShader = R"glsl(
+    #version 430
+
+    in vec2 a_position;
+
+    uniform mat4 u_model;
+    uniform mat4 u_view;
+    uniform mat4 u_proj;
+
+    void main()
+    {
+        gl_Position = (u_proj * u_view * u_model * vec4(a_position, 0.0, 1.0));
+    }
+)glsl";
 
 const char* CWindowGL::g_FragmentShader =   "#version 430\n"
                                             "void main() {"
@@ -19,6 +28,7 @@ const char* CWindowGL::g_FragmentShader =   "#version 430\n"
 CWindowGL::CWindowGL()
 {
     m_Window = NULL;
+    m_ProgramId = 0;
 }
 
 CWindowGL::~CWindowGL()
@@ -91,8 +101,7 @@ bool CWindowGL::Initialize()
     /* Compile and Link Shaders */
     GLuint vShaderId = CompileShader(g_VertexShader, GL_VERTEX_SHADER);
     GLuint fShaderId = CompileShader(g_FragmentShader, GL_FRAGMENT_SHADER);
-    GLuint programId = LinkProgram(vShaderId, fShaderId);
-    GLuint posAttributePosition = glGetAttribLocation(programId, "pos");
+    m_ProgramId = LinkProgram(vShaderId, fShaderId);
 
     std::cout << "Criando o VAO...\n";
 
@@ -101,13 +110,12 @@ bool CWindowGL::Initialize()
     glGenVertexArrays(1, &vaoId);
     glBindVertexArray(vaoId);
     glBindBuffer(GL_ARRAY_BUFFER, vboId);
+
+    GLuint posAttributePosition = glGetAttribLocation(m_ProgramId, "a_position");
     glVertexAttribPointer(posAttributePosition, 3, GL_FLOAT, false, 0, 0);
     glEnableVertexAttribArray(posAttributePosition);
 
     std::cout << "Iniciando...\n";
-
-    /* Use Shaders */
-    glUseProgram(programId);
 	return true;
 }
 
@@ -125,36 +133,56 @@ void CWindowGL::Cleanup()
 
 bool CWindowGL::Render()
 {
-    /* Start the Dear ImGui frame */
+    // Clear OpenGl frame.
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Start the Dear ImGui frame.
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    /* Create ImGui Sliders */
+    // Create ImGui Sliders.
     ImGui::Begin("Infos:");
-    ImGui::SliderInt("X", &g_SliderInfo.m_X, 0, g_MaxX);
-    ImGui::SliderInt("Y", &g_SliderInfo.m_Y, 0, g_MaxY);
+    ImGui::SliderFloat("X", &g_SliderInfo.m_X, -2.f, 2.f);
+    ImGui::SliderFloat("Y", &g_SliderInfo.m_Y, -2.f, 2.f);
     ImGui::SliderInt("Angle", &g_SliderInfo.m_Angle, 0, 360);
     ImGui::SliderFloat("Scale X", &g_SliderInfo.m_ScaleX, -5.f, 5.f);
     ImGui::SliderFloat("Scale Y", &g_SliderInfo.m_ScaleY, -5.f, 5.f);
     ImGui::End();
 
-    /* Rendering the ImGui */
+    // Rendering the ImGui.
     ImGui::Render();
-
-    /* Clear OpenGl frame */
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    /* Render all ImGui data */
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    /* Draw triangles starting from index 0 and using 3 indices */
+    // Use Shaders.
+    glUseProgram(m_ProgramId);
+
+    // Transforms.
+    GLint projPos = glGetUniformLocation(m_ProgramId, "u_proj");
+    GLint modelPos = glGetUniformLocation(m_ProgramId, "u_model");
+    GLint viewPos = glGetUniformLocation(m_ProgramId, "u_view");
+
+    glm::mat4 proj(1.f);
+    glm::mat4 model(1.f);
+    glm::mat4 view(1.f);
+
+    proj = glm::scale(proj, glm::vec3(0.80f, 0.80f, 0.80f));
+    model = glm::translate(model, glm::vec3(g_SliderInfo.m_X, g_SliderInfo.m_Y, 0.f));
+    model = glm::scale(model, glm::vec3(g_SliderInfo.m_ScaleX, g_SliderInfo.m_ScaleY, 0.f));
+    model = glm::rotate(model, glm::radians((float)g_SliderInfo.m_Angle), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    glUniformMatrix4fv(projPos, 1, GL_FALSE, glm::value_ptr(proj));
+    glUniformMatrix4fv(modelPos, 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(viewPos, 1, GL_FALSE, glm::value_ptr(view));
+
+    // Draw triangles starting from index 0 and using 3 indices.
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
-    /* Swap front and back buffers */
+    // Swap front and back buffers.
     glfwSwapBuffers(m_Window);
 
-    /* Poll for and process events */
+    // Poll for and process events.
     glfwPollEvents();
 
     return glfwWindowShouldClose(m_Window);

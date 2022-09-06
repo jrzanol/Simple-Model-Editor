@@ -9,19 +9,23 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
 struct SliderInfo
 {
-	int m_X;
-	int m_Y;
+	float m_X;
+	float m_Y;
 	int m_Angle;
 	float m_ScaleX;
 	float m_ScaleY;
 
-	SliderInfo(int x, int y, int angle, float scalex, float scaley)
+	SliderInfo(float x, float y, int angle, float scalex, float scaley)
 	{
 		m_X = x;
 		m_Y = y;
@@ -51,6 +55,7 @@ private:
 	GLuint LoadDataInBuffers();
 
 	GLFWwindow* m_Window;
+	GLuint m_ProgramId;
 
 	static const char* g_VertexShader;
 	static const char* g_FragmentShader;
