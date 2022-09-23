@@ -35,3 +35,4 @@ src/out
 *.out
 *.app
 /bin/*.pdb
+/x64/bin

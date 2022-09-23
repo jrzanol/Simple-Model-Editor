@@ -1,7 +1,7 @@
 // by jrzanol
 // 
 
-#include <stdlib.h>
+#include "stdafx.h"
 #include "CWindowGL.h"
 
 int main(int argc, const char* argv[])

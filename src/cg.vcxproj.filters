@@ -41,9 +41,21 @@
     <ClCompile Include="CWindowGL.cpp">
       <Filter>OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Arquivos de Origem</Filter>
+    </ClCompile>
+    <ClCompile Include="CObject.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CWindowGL.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Arquivos de Origem</Filter>
+    </ClInclude>
+    <ClInclude Include="CObject.h">
       <Filter>OpenGL</Filter>
     </ClInclude>
   </ItemGroup>
