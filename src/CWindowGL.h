@@ -38,11 +38,10 @@ public:
 	static const int g_MaxY = 768;
 
 private:
-	std::list<CDrawableObject> m_DrawObj;
+	std::list<CDrawableObject*> m_DrawObject;
 	
 	GLuint CompileShader(const char*, GLenum);
 	GLuint LinkProgram(GLuint, GLuint);
-	GLuint LoadDataInBuffers();
 
 	GLFWwindow* m_Window;
 	GLuint m_ProgramId;

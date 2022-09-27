@@ -7,21 +7,20 @@
 SliderInfo CWindowGL::g_SliderInfo(0.f, 0.f, 0, 1.f, 1.f);
 
 const char* CWindowGL::g_VertexShader = R"glsl(
-    #version 430
+    #version 130
 
-    in vec2 a_position;
+    in vec3 a_position;
 
-    uniform mat4 u_model;
     uniform mat4 u_view;
     uniform mat4 u_proj;
 
     void main()
     {
-        gl_Position = (u_proj * u_view * u_model * vec4(a_position, 0.0, 1.0));
+        gl_Position = u_proj * u_view * vec4(a_position, 1.0);
     }
 )glsl";
 
-const char* CWindowGL::g_FragmentShader =   "#version 430\n"
+const char* CWindowGL::g_FragmentShader =   "#version 130\n"
                                             "void main() {"
                                                 "gl_FragColor = vec4(1, 0, 0, 1);"
                                             "}";
@@ -34,27 +33,6 @@ CWindowGL::CWindowGL()
 
 CWindowGL::~CWindowGL()
 {
-}
-
-GLuint CWindowGL::LoadDataInBuffers()
-{
-    GLfloat vertices[] = { // vertex coordinates
-                              -0.7f, -0.7f, 0.f,
-                               0.7f, -0.7f, 0.f,
-                                0.f,  0.7f, 0.f
-    };
-
-    GLuint vboId;
-
-    // allocate buffer space and pass data to it
-    glGenBuffers(1, &vboId);
-    glBindBuffer(GL_ARRAY_BUFFER, vboId);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // unbind the active buffer
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    return vboId;
 }
 
 bool CWindowGL::Initialize()
@@ -104,17 +82,10 @@ bool CWindowGL::Initialize()
     GLuint fShaderId = CompileShader(g_FragmentShader, GL_FRAGMENT_SHADER);
     m_ProgramId = LinkProgram(vShaderId, fShaderId);
 
-    std::cout << "Criando o VAO...\n";
+    std::cout << "Carregando os modelos...\n";
 
-    /* Create VAO buffer */
-    GLuint vaoId, vboId = LoadDataInBuffers();
-    glGenVertexArrays(1, &vaoId);
-    glBindVertexArray(vaoId);
-    glBindBuffer(GL_ARRAY_BUFFER, vboId);
-
-    GLuint posAttributePosition = glGetAttribLocation(m_ProgramId, "a_position");
-    glVertexAttribPointer(posAttributePosition, 3, GL_FLOAT, false, 0, 0);
-    glEnableVertexAttribArray(posAttributePosition);
+    // Load Models.
+    m_DrawObject.push_back(new CDrawableObject(m_ProgramId, "cube.obj"));
 
     std::cout << "Iniciando...\n";
 	return true;
@@ -138,6 +109,28 @@ bool CWindowGL::Render()
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // Use Shaders.
+    glUseProgram(m_ProgramId);
+
+    // Transforms.
+    GLint projPos = glGetUniformLocation(m_ProgramId, "u_proj");
+    GLint modelPos = glGetUniformLocation(m_ProgramId, "u_model");
+    GLint viewPos = glGetUniformLocation(m_ProgramId, "u_view");
+
+    glm::mat4 projection = glm::perspective(glm::radians(90.f), (float)g_MaxY / (float)g_MaxX, 0.1f, 100.0f);
+    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 model(1.f);
+    model = glm::translate(model, glm::vec3(g_SliderInfo.m_X, g_SliderInfo.m_Y, 0.f));
+    model = glm::scale(model, glm::vec3(g_SliderInfo.m_ScaleX, g_SliderInfo.m_ScaleY, 0.f));
+    model = glm::rotate(model, glm::radians((float)g_SliderInfo.m_Angle), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    glUniformMatrix4fv(projPos, 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(modelPos, 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(viewPos, 1, GL_FALSE, glm::value_ptr(view));
+
+    for (const auto& it : m_DrawObject)
+        it->Draw();
+
     // Start the Dear ImGui frame.
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -155,30 +148,6 @@ bool CWindowGL::Render()
     // Rendering the ImGui.
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-    // Use Shaders.
-    glUseProgram(m_ProgramId);
-
-    // Transforms.
-    GLint projPos = glGetUniformLocation(m_ProgramId, "u_proj");
-    GLint modelPos = glGetUniformLocation(m_ProgramId, "u_model");
-    GLint viewPos = glGetUniformLocation(m_ProgramId, "u_view");
-
-    glm::mat4 proj(1.f);
-    glm::mat4 model(1.f);
-    glm::mat4 view(1.f);
-
-    proj = glm::scale(proj, glm::vec3(0.80f, 0.80f, 0.80f));
-    model = glm::translate(model, glm::vec3(g_SliderInfo.m_X, g_SliderInfo.m_Y, 0.f));
-    model = glm::scale(model, glm::vec3(g_SliderInfo.m_ScaleX, g_SliderInfo.m_ScaleY, 0.f));
-    model = glm::rotate(model, glm::radians((float)g_SliderInfo.m_Angle), glm::vec3(0.0f, 0.0f, 1.0f));
-
-    glUniformMatrix4fv(projPos, 1, GL_FALSE, glm::value_ptr(proj));
-    glUniformMatrix4fv(modelPos, 1, GL_FALSE, glm::value_ptr(model));
-    glUniformMatrix4fv(viewPos, 1, GL_FALSE, glm::value_ptr(view));
-
-    // Draw triangles starting from index 0 and using 3 indices.
-    glDrawArrays(GL_TRIANGLES, 0, 3);
 
     // Swap front and back buffers.
     glfwSwapBuffers(m_Window);
