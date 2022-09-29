@@ -15,6 +15,12 @@
     <Filter Include="OpenGL">
       <UniqueIdentifier>{be23eeea-08b8-4f56-a895-04529f9864d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Util">
+      <UniqueIdentifier>{8613f89f-4b5f-46d0-9b25-9c720ba82fe2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Interface">
+      <UniqueIdentifier>{24a12038-eb87-4177-9677-332d6f42f511}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -47,6 +53,15 @@
     <ClCompile Include="CObject.cpp">
       <Filter>OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="CUtil.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="CEvent.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="CCamera.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CWindowGL.h">
@@ -57,6 +72,15 @@
     </ClInclude>
     <ClInclude Include="CObject.h">
       <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="CUtil.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="CEvent.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="CCamera.h">
+      <Filter>Interface</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

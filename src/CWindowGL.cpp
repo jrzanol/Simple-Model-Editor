@@ -4,19 +4,20 @@
 #include "stdafx.h"
 #include "CWindowGL.h"
 
-SliderInfo CWindowGL::g_SliderInfo(0.f, 0.f, 0, 1.f, 1.f);
-
 const char* CWindowGL::g_VertexShader = R"glsl(
-    #version 130
+    #version 430
 
-    in vec3 a_position;
+    layout(location = 0) in vec3 a_position;
+    layout(location = 1) in vec3 a_normals;
+    layout(location = 2) in vec2 a_texcoords;
 
     uniform mat4 u_view;
     uniform mat4 u_proj;
+    uniform mat4 u_model;
 
     void main()
     {
-        gl_Position = u_proj * u_view * vec4(a_position, 1.0);
+        gl_Position = u_proj * u_view * u_model * vec4(a_position, 1.0);
     }
 )glsl";
 
@@ -25,7 +26,7 @@ const char* CWindowGL::g_FragmentShader =   "#version 130\n"
                                                 "gl_FragColor = vec4(1, 0, 0, 1);"
                                             "}";
 
-CWindowGL::CWindowGL()
+CWindowGL::CWindowGL() : CCamera()
 {
     m_Window = NULL;
     m_ProgramId = 0;
@@ -44,7 +45,7 @@ bool CWindowGL::Initialize()
         return false;
 
     /* Create a windowed mode window and its OpenGL context */
-    m_Window = glfwCreateWindow(g_MaxX, g_MaxY, "cg", NULL, NULL);
+    m_Window = glfwCreateWindow(CUtil::g_MaxX, CUtil::g_MaxY, "cg", NULL, NULL);
     if (!m_Window)
     {
         glfwTerminate();
@@ -54,6 +55,8 @@ bool CWindowGL::Initialize()
     /* Make the window's context current */
     glfwMakeContextCurrent(m_Window);
     glfwSwapInterval(1); // Enable vsync
+
+    ::CEvent::Initialize();
 
     std::cout << "Iniciando glew...\n";
 
@@ -84,8 +87,11 @@ bool CWindowGL::Initialize()
 
     std::cout << "Carregando os modelos...\n";
 
+    // Use Shaders.
+    glUseProgram(m_ProgramId);
+    
     // Load Models.
-    m_DrawObject.push_back(new CDrawableObject(m_ProgramId, "cube.obj"));
+    m_DrawObject.push_back(new CDrawableObject(m_ProgramId, "Alien Animal.obj"));
 
     std::cout << "Iniciando...\n";
 	return true;
@@ -109,25 +115,10 @@ bool CWindowGL::Render()
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Use Shaders.
-    glUseProgram(m_ProgramId);
+    glm::mat4 view = GetViewMatrix();
+    glUniformMatrix4fv(glGetUniformLocation(m_ProgramId, "u_view"), 1, GL_FALSE, glm::value_ptr(view));
 
-    // Transforms.
-    GLint projPos = glGetUniformLocation(m_ProgramId, "u_proj");
-    GLint modelPos = glGetUniformLocation(m_ProgramId, "u_model");
-    GLint viewPos = glGetUniformLocation(m_ProgramId, "u_view");
-
-    glm::mat4 projection = glm::perspective(glm::radians(90.f), (float)g_MaxY / (float)g_MaxX, 0.1f, 100.0f);
-    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    glm::mat4 model(1.f);
-    model = glm::translate(model, glm::vec3(g_SliderInfo.m_X, g_SliderInfo.m_Y, 0.f));
-    model = glm::scale(model, glm::vec3(g_SliderInfo.m_ScaleX, g_SliderInfo.m_ScaleY, 0.f));
-    model = glm::rotate(model, glm::radians((float)g_SliderInfo.m_Angle), glm::vec3(0.0f, 0.0f, 1.0f));
-
-    glUniformMatrix4fv(projPos, 1, GL_FALSE, glm::value_ptr(projection));
-    glUniformMatrix4fv(modelPos, 1, GL_FALSE, glm::value_ptr(model));
-    glUniformMatrix4fv(viewPos, 1, GL_FALSE, glm::value_ptr(view));
-
+    // Draw objects.
     for (const auto& it : m_DrawObject)
         it->Draw();
 
@@ -138,11 +129,11 @@ bool CWindowGL::Render()
 
     // Create ImGui Sliders.
     ImGui::Begin("Infos:");
-    ImGui::SliderFloat("X", &g_SliderInfo.m_X, -2.f, 2.f);
-    ImGui::SliderFloat("Y", &g_SliderInfo.m_Y, -2.f, 2.f);
-    ImGui::SliderInt("Angle", &g_SliderInfo.m_Angle, 0, 360);
-    ImGui::SliderFloat("Scale X", &g_SliderInfo.m_ScaleX, -5.f, 5.f);
-    ImGui::SliderFloat("Scale Y", &g_SliderInfo.m_ScaleY, -5.f, 5.f);
+    ImGui::SliderFloat("X", &CUtil::g_SliderInfo.m_X, -2.f, 2.f);
+    ImGui::SliderFloat("Y", &CUtil::g_SliderInfo.m_Y, -2.f, 2.f);
+    ImGui::SliderInt("Angle", &CUtil::g_SliderInfo.m_Angle, 0, 360);
+    ImGui::SliderFloat("Scale X", &CUtil::g_SliderInfo.m_ScaleX, -5.f, 5.f);
+    ImGui::SliderFloat("Scale Y", &CUtil::g_SliderInfo.m_ScaleY, -5.f, 5.f);
     ImGui::End();
 
     // Rendering the ImGui.

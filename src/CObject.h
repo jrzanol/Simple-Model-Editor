@@ -5,23 +5,25 @@
 
 const int MAX_OBJECT = 128;
 
+struct Vertex
+{
+    glm::vec3 Position;
+    glm::vec3 Normal;
+    glm::vec2 TexCoords;
+};
+
 class CObject
 {
 public:
 	// Load File or Find Object.
-	static CObject* LoadModel(GLuint, std::string);
+	static CObject* LoadModel(std::string);
 
 protected:
 	GLuint m_VAOId;
 	GLuint m_VBOId;
-	GLuint m_UVBuffer;
-	GLuint m_NormalBuffer;
-	GLuint m_ProgramId;
-
-	std::vector<unsigned int> m_VerticesIndices;
-	std::vector<glm::vec3> m_Vertices;
-	std::vector<glm::vec2> m_UVs;
-	std::vector<glm::vec3> m_Normals;
+	//GLuint m_EBOId;
+	
+	std::vector<Vertex> m_Vertex;
 	std::string m_ObjName;
 
 private:
@@ -36,6 +38,9 @@ public:
 	~CDrawableObject();
 	
 	void Draw() const;
+	
+private:
+	GLuint m_ProgramId;
 };
 
 

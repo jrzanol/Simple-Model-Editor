@@ -2,12 +2,14 @@
 //
 
 #include "stdafx.h"
+
+#include "CUtil.h"
 #include "CObject.h"
 
 int CObject::g_ListCounter = 0;
 CObject CObject::g_List[MAX_OBJECT];
 
-CObject* CObject::LoadModel(GLuint programId, std::string file)
+CObject* CObject::LoadModel(std::string file)
 {
     for (auto& it : g_List)
     {
@@ -22,7 +24,6 @@ CObject* CObject::LoadModel(GLuint programId, std::string file)
 
     CObject* obj = &g_List[g_ListCounter];
     obj->m_ObjName = file;
-    obj->m_ProgramId = programId;
 
     // http://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading/#creating-an-obj-file-in-blender
 
@@ -33,7 +34,7 @@ CObject* CObject::LoadModel(GLuint programId, std::string file)
         return NULL;
     }
 
-    std::vector<unsigned int> uvIndices, normalIndices;
+    std::vector<unsigned int> vertexIds, uvIndices, normalIndices;
     std::vector<glm::vec3> temp_vertices;
     std::vector<glm::vec2> temp_uvs;
     std::vector<glm::vec3> temp_normals;
@@ -79,10 +80,9 @@ CObject* CObject::LoadModel(GLuint programId, std::string file)
                 return NULL;
             }
 
-            obj->m_VerticesIndices.push_back(vertexIndex[0]);
-            obj->m_VerticesIndices.push_back(vertexIndex[1]);
-            obj->m_VerticesIndices.push_back(vertexIndex[2]);
-
+            vertexIds.push_back(vertexIndex[0]);
+            vertexIds.push_back(vertexIndex[1]);
+            vertexIds.push_back(vertexIndex[2]);
             uvIndices.push_back(uvIndex[0]);
             uvIndices.push_back(uvIndex[1]);
             uvIndices.push_back(uvIndex[2]);
@@ -94,59 +94,41 @@ CObject* CObject::LoadModel(GLuint programId, std::string file)
 
     fclose(in);
 
-    for (unsigned int i = 0; i < obj->m_VerticesIndices.size(); i++)
+    for (unsigned int i = 0; i < vertexIds.size(); i++)
     {
-        unsigned int vertexIndex = obj->m_VerticesIndices[i];
-        glm::vec3 vertex = temp_vertices[vertexIndex - 1];
+    	Vertex vertex;
+        vertex.Position = temp_vertices[vertexIds[i] - 1];
+        vertex.Normal = temp_normals[normalIndices[i] - 1];
+        vertex.TexCoords = temp_uvs[uvIndices[i] - 1];
 
-        obj->m_Vertices.push_back(vertex);
+        obj->m_Vertex.push_back(vertex);
     }
 
-    for (unsigned int i = 0; i < uvIndices.size(); i++)
-    {
-        unsigned int vertexIndex = uvIndices[i];
-        glm::vec2 uv = temp_uvs[vertexIndex - 1];
-
-        obj->m_UVs.push_back(uv);
-    }
-
-    for (unsigned int i = 0; i < normalIndices.size(); i++)
-    {
-        unsigned int vertexIndex = normalIndices[i];
-        glm::vec3 normal = temp_normals[vertexIndex - 1];
-
-        obj->m_Normals.push_back(normal);
-    }
-
-    // Generate VBO buffer.
-    glGenBuffers(1, &obj->m_VBOId);
-    glBindBuffer(GL_ARRAY_BUFFER, obj->m_VBOId);
-    glBufferData(GL_ARRAY_BUFFER, obj->m_Vertices.size() * sizeof(glm::vec3), &obj->m_Vertices[0], GL_STATIC_DRAW);
-
-    // Generate VAO buffer.
+    // Generate Buffers.
     glGenVertexArrays(1, &obj->m_VAOId);
+    glGenBuffers(1, &obj->m_VBOId);
+    //glGenBuffers(1, &obj->m_EBOId);
+    
+    // Set Vertex buffer.
     glBindVertexArray(obj->m_VAOId);
     glBindBuffer(GL_ARRAY_BUFFER, obj->m_VBOId);
-    GLuint posAttributePosition = glGetAttribLocation(obj->m_ProgramId, "a_position");
-    glVertexAttribPointer(posAttributePosition, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(posAttributePosition);
+    glBufferData(GL_ARRAY_BUFFER, obj->m_Vertex.size() * sizeof(Vertex), &obj->m_Vertex[0], GL_STATIC_DRAW);
 
-    // Allocate Normals buffer.
-    //glGenBuffers(1, &obj->m_NormalBuffer);
-    //glBindBuffer(GL_ARRAY_BUFFER, obj->m_NormalBuffer);
-    //glBufferData(GL_ARRAY_BUFFER, obj->m_Normals.size() * sizeof(glm::vec3), &obj->m_Normals[0], GL_STATIC_DRAW);
-
-    //// 3rd attribute buffer : normals
-    //glEnableVertexAttribArray(2);
-    //glBindBuffer(GL_ARRAY_BUFFER, obj->m_NormalBuffer);
-    //glVertexAttribPointer(
-    //    2,                                // attribute
-    //    3,                                // size
-    //    GL_FLOAT,                         // type
-    //    GL_FALSE,                         // normalized?
-    //    0,                                // stride
-    //    (void*)0                          // array buffer offset
-    //);
+    // Set Indices buffer.
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj->m_EBOId);
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, obj->m_VertexIds.size() * sizeof(unsigned int), &obj->m_VertexIds[0], GL_STATIC_DRAW);
+                 
+    // Vertex Positions.
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    
+    // Vertex Normals.
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+    
+    // Vertex Texture Coords
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
 
     // Unbind the active buffer.
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -155,8 +137,9 @@ CObject* CObject::LoadModel(GLuint programId, std::string file)
     return obj;
 }
 
-CDrawableObject::CDrawableObject(GLuint programId, std::string file) : CObject(*LoadModel(programId, file))
+CDrawableObject::CDrawableObject(GLuint programId, std::string file) : CObject(*LoadModel(file))
 {
+	m_ProgramId = programId;
 }
 
 CDrawableObject::~CDrawableObject()
@@ -165,7 +148,26 @@ CDrawableObject::~CDrawableObject()
 
 void CDrawableObject::Draw() const
 {
+    // Bind buffer vector of object.
     glBindVertexArray(m_VAOId);
-    glDrawArrays(GL_TRIANGLES, 0, m_VerticesIndices.size());
+    
+    // Transforms.
+    GLint projPos = glGetUniformLocation(m_ProgramId, "u_proj");
+    GLint modelPos = glGetUniformLocation(m_ProgramId, "u_model");
+
+    glm::mat4 projection = glm::perspective(glm::radians(90.f), (float)CUtil::g_MaxY / (float)CUtil::g_MaxX, 0.1f, 100.0f);
+    glm::mat4 model(1.f);
+    model = glm::translate(model, glm::vec3(CUtil::g_SliderInfo.m_X, CUtil::g_SliderInfo.m_Y, 0.f));
+    model = glm::scale(model, glm::vec3(CUtil::g_SliderInfo.m_ScaleX, CUtil::g_SliderInfo.m_ScaleY, 1.f));
+    model = glm::rotate(model, glm::radians((float)CUtil::g_SliderInfo.m_Angle), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    glUniformMatrix4fv(projPos, 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(modelPos, 1, GL_FALSE, glm::value_ptr(model));
+    
+    // Draw vertices.
+    glDrawArrays(GL_TRIANGLES, 0, m_Vertex.size());
+    
+    // Unbind the active buffer.
+    glBindVertexArray(0);
 }
 
