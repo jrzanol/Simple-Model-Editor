@@ -2,41 +2,19 @@
 //
 
 #include "stdafx.h"
-#include "CWindowGL.h"
+#include "CWindow.h"
 
-const char* CWindowGL::g_VertexShader = R"glsl(
-    #version 430
-
-    layout(location = 0) in vec3 a_position;
-    layout(location = 1) in vec3 a_normals;
-    layout(location = 2) in vec2 a_texcoords;
-
-    uniform mat4 u_view;
-    uniform mat4 u_proj;
-    uniform mat4 u_model;
-
-    void main()
-    {
-        gl_Position = u_proj * u_view * u_model * vec4(a_position, 1.0);
-    }
-)glsl";
-
-const char* CWindowGL::g_FragmentShader =   "#version 130\n"
-                                            "void main() {"
-                                                "gl_FragColor = vec4(1, 0, 0, 1);"
-                                            "}";
-
-CWindowGL::CWindowGL() : CCamera()
+CWindow::CWindow() : CCamera()
 {
-    m_Window = NULL;
+    g_Window = NULL;
     m_ProgramId = 0;
 }
 
-CWindowGL::~CWindowGL()
+CWindow::~CWindow()
 {
 }
 
-bool CWindowGL::Initialize()
+bool CWindow::Initialize()
 {
     std::cout << "Iniciando glfw...\n";
 
@@ -45,15 +23,15 @@ bool CWindowGL::Initialize()
         return false;
 
     /* Create a windowed mode window and its OpenGL context */
-    m_Window = glfwCreateWindow(CUtil::g_MaxX, CUtil::g_MaxY, "cg", NULL, NULL);
-    if (!m_Window)
+    g_Window = glfwCreateWindow(g_WindowMaxX, g_WindowMaxY, "cg", NULL, NULL);
+    if (!g_Window)
     {
         glfwTerminate();
         return false;
     }
 
     /* Make the window's context current */
-    glfwMakeContextCurrent(m_Window);
+    glfwMakeContextCurrent(g_Window);
     glfwSwapInterval(1); // Enable vsync
 
     ::CEvent::Initialize();
@@ -75,14 +53,14 @@ bool CWindowGL::Initialize()
     /* Initialize ImGui */
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
+    ImGui_ImplGlfw_InitForOpenGL(g_Window, true);
     ImGui_ImplOpenGL3_Init();
 
     std::cout << "Compilando os Shaders...\n";
 
     /* Compile and Link Shaders */
-    GLuint vShaderId = CompileShader(g_VertexShader, GL_VERTEX_SHADER);
-    GLuint fShaderId = CompileShader(g_FragmentShader, GL_FRAGMENT_SHADER);
+    GLuint vShaderId = CompileShader(CUtil::m_VertexShader, GL_VERTEX_SHADER);
+    GLuint fShaderId = CompileShader(CUtil::m_FragmentShader, GL_FRAGMENT_SHADER);
     m_ProgramId = LinkProgram(vShaderId, fShaderId);
 
     std::cout << "Carregando os modelos...\n";
@@ -97,7 +75,7 @@ bool CWindowGL::Initialize()
 	return true;
 }
 
-void CWindowGL::Cleanup()
+void CWindow::Cleanup()
 {
     /* Cleanup ImGui */
     ImGui_ImplOpenGL3_Shutdown();
@@ -105,15 +83,18 @@ void CWindowGL::Cleanup()
     ImGui::DestroyContext();
 
     /* Cleanup GLFW */
-    glfwDestroyWindow(m_Window);
+    glfwDestroyWindow(g_Window);
     glfwTerminate();
 }
 
-bool CWindowGL::Render()
+bool CWindow::Render()
 {
     // Clear OpenGl frame.
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glm::mat4 projection = glm::perspective(glm::radians(m_Zoom), (float)g_WindowMaxY / (float)g_WindowMaxX, 0.1f, 100.0f);
+    glUniformMatrix4fv(glGetUniformLocation(m_ProgramId, "u_proj"), 1, GL_FALSE, glm::value_ptr(projection));
 
     glm::mat4 view = GetViewMatrix();
     glUniformMatrix4fv(glGetUniformLocation(m_ProgramId, "u_view"), 1, GL_FALSE, glm::value_ptr(view));
@@ -129,11 +110,11 @@ bool CWindowGL::Render()
 
     // Create ImGui Sliders.
     ImGui::Begin("Infos:");
-    ImGui::SliderFloat("X", &CUtil::g_SliderInfo.m_X, -2.f, 2.f);
-    ImGui::SliderFloat("Y", &CUtil::g_SliderInfo.m_Y, -2.f, 2.f);
-    ImGui::SliderInt("Angle", &CUtil::g_SliderInfo.m_Angle, 0, 360);
-    ImGui::SliderFloat("Scale X", &CUtil::g_SliderInfo.m_ScaleX, -5.f, 5.f);
-    ImGui::SliderFloat("Scale Y", &CUtil::g_SliderInfo.m_ScaleY, -5.f, 5.f);
+    ImGui::SliderFloat("X", &CUtil::m_SliderInfo.m_X, -2.f, 2.f);
+    ImGui::SliderFloat("Y", &CUtil::m_SliderInfo.m_Y, -2.f, 2.f);
+    ImGui::SliderInt("Angle", &CUtil::m_SliderInfo.m_Angle, 0, 360);
+    ImGui::SliderFloat("Scale X", &CUtil::m_SliderInfo.m_ScaleX, -5.f, 5.f);
+    ImGui::SliderFloat("Scale Y", &CUtil::m_SliderInfo.m_ScaleY, -5.f, 5.f);
     ImGui::End();
 
     // Rendering the ImGui.
@@ -141,15 +122,19 @@ bool CWindowGL::Render()
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // Swap front and back buffers.
-    glfwSwapBuffers(m_Window);
+    glfwSwapBuffers(g_Window);
 
     // Poll for and process events.
     glfwPollEvents();
 
-    return glfwWindowShouldClose(m_Window);
+    // Process Input events.
+    for (const auto& it : g_EventList)
+        it->ProcessInput(g_Window);
+
+    return glfwWindowShouldClose(g_Window);
 }
 
-GLuint CWindowGL::CompileShader(const char* shaderCode, GLenum type)
+GLuint CWindow::CompileShader(const char* shaderCode, GLenum type)
 {
     GLuint shaderId = glCreateShader(type);
 
@@ -183,7 +168,7 @@ GLuint CWindowGL::CompileShader(const char* shaderCode, GLenum type)
     return shaderId;
 }
 
-GLuint CWindowGL::LinkProgram(GLuint vertexShaderId, GLuint fragmentShaderId)
+GLuint CWindow::LinkProgram(GLuint vertexShaderId, GLuint fragmentShaderId)
 {
     GLuint programId = glCreateProgram(); // create a program
 

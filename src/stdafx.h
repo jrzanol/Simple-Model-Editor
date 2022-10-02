@@ -5,10 +5,9 @@
 
 #include <list>
 #include <string>
+#include <vector>
 #include <iostream>
 #include <algorithm>
-
-#include <rapidobj/rapidobj.hpp>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"

@@ -29,7 +29,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -85,13 +85,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>out\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)3rdparty\glfw-3.3.8.bin.WIN32\include;$(SolutionDir)3rdparty\imgui;$(SolutionDir)3rdparty\imgui\backends;$(SolutionDir)3rdparty\glew-2.2.0\include;$(SolutionDir)3rdparty\glm;$(SolutionDir)3rdparty\rapidobj\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)3rdparty\glfw-3.3.8.bin.WIN32\include;$(SolutionDir)3rdparty\imgui;$(SolutionDir)3rdparty\imgui\backends;$(SolutionDir)3rdparty\glew-2.2.0\include;$(SolutionDir)3rdparty\glm;$(SolutionDir)3rdparty\rapidobj\include;$(SolutionDir)src;$(SolutionDir)src\Util;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)3rdparty\glfw-3.3.8.bin.WIN32\lib-vc2022;$(SolutionDir)3rdparty\glew-2.2.0\lib\Release\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>out\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)3rdparty\glfw-3.3.8.bin.WIN32\include;$(SolutionDir)3rdparty\imgui;$(SolutionDir)3rdparty\imgui\backends;$(SolutionDir)3rdparty\glew-2.2.0\include;$(SolutionDir)3rdparty\glm;$(SolutionDir)3rdparty\rapidobj\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)3rdparty\glfw-3.3.8.bin.WIN32\include;$(SolutionDir)3rdparty\imgui;$(SolutionDir)3rdparty\imgui\backends;$(SolutionDir)3rdparty\glew-2.2.0\include;$(SolutionDir)3rdparty\glm;$(SolutionDir)3rdparty\rapidobj\include;$(SolutionDir)src;$(SolutionDir)src\Util;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)3rdparty\glfw-3.3.8.bin.WIN32\lib-vc2022;$(SolutionDir)3rdparty\glew-2.2.0\lib\Release\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -203,7 +203,7 @@
     <ClCompile Include="CEvent.cpp" />
     <ClCompile Include="CObject.cpp" />
     <ClCompile Include="CUtil.cpp" />
-    <ClCompile Include="CWindowGL.cpp" />
+    <ClCompile Include="CWindow.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -211,14 +211,16 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Util\CReadObj.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CCamera.h" />
     <ClInclude Include="CEvent.h" />
     <ClInclude Include="CObject.h" />
-    <ClInclude Include="CWindowGL.h" />
+    <ClInclude Include="CWindow.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="CUtil.h" />
+    <ClInclude Include="Util\CReadObj.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,19 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Arquivos de Origem">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Arquivos de Cabeçalho">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="GUI">
       <UniqueIdentifier>{ca182614-6edf-41bf-a49e-edb5f3506998}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="OpenGL">
-      <UniqueIdentifier>{be23eeea-08b8-4f56-a895-04529f9864d9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Util">
       <UniqueIdentifier>{8613f89f-4b5f-46d0-9b25-9c720ba82fe2}</UniqueIdentifier>
@@ -21,10 +10,17 @@
     <Filter Include="Interface">
       <UniqueIdentifier>{24a12038-eb87-4177-9677-332d6f42f511}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Model">
+      <UniqueIdentifier>{433582ed-e68b-4e6b-9ba1-75fffe9deeb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
-      <Filter>Arquivos de Origem</Filter>
+      <Filter>Main</Filter>
     </ClCompile>
     <ClCompile Include="..\3rdparty\imgui\backends\imgui_impl_glfw.cpp">
       <Filter>GUI</Filter>
@@ -44,14 +40,8 @@
     <ClCompile Include="..\3rdparty\imgui\backends\imgui_impl_opengl3.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
-    <ClCompile Include="CWindowGL.cpp">
-      <Filter>OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="stdafx.cpp">
-      <Filter>Arquivos de Origem</Filter>
-    </ClCompile>
-    <ClCompile Include="CObject.cpp">
-      <Filter>OpenGL</Filter>
+      <Filter>Main</Filter>
     </ClCompile>
     <ClCompile Include="CUtil.cpp">
       <Filter>Util</Filter>
@@ -62,16 +52,19 @@
     <ClCompile Include="CCamera.cpp">
       <Filter>Interface</Filter>
     </ClCompile>
+    <ClCompile Include="CWindow.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="CObject.cpp">
+      <Filter>Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\CReadObj.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CWindowGL.h">
-      <Filter>OpenGL</Filter>
-    </ClInclude>
     <ClInclude Include="stdafx.h">
-      <Filter>Arquivos de Origem</Filter>
-    </ClInclude>
-    <ClInclude Include="CObject.h">
-      <Filter>OpenGL</Filter>
+      <Filter>Main</Filter>
     </ClInclude>
     <ClInclude Include="CUtil.h">
       <Filter>Util</Filter>
@@ -81,6 +74,15 @@
     </ClInclude>
     <ClInclude Include="CCamera.h">
       <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CWindow.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CObject.h">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\CReadObj.h">
+      <Filter>Util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

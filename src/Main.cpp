@@ -4,11 +4,11 @@
 #include "stdafx.h"
 
 #include "CEvent.h"
-#include "CWindowGL.h"
+#include "CWindow.h"
 
 int main(int argc, const char* argv[])
 {
-    CWindowGL window;
+    CWindow window;
 
     if (!window.Initialize())
         return EXIT_FAILURE;
@@ -16,8 +16,8 @@ int main(int argc, const char* argv[])
     while (!window.Render())
     {
         float currentFrame = static_cast<float>(glfwGetTime());
-        CUtil::m_DeltaTime = currentFrame - CUtil::m_LastTime;
-        CUtil::m_LastTime = currentFrame;
+        g_DeltaTime = currentFrame - g_LastTime;
+        g_LastTime = currentFrame;
 
         static int lastSecTimer = -1;
         static int lastMinTimer = -1;

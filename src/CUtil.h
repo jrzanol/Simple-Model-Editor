@@ -3,7 +3,7 @@
 
 #pragma once
 
-struct SliderInfo
+struct SSliderInfo
 {
 	float m_X;
 	float m_Y;
@@ -11,7 +11,7 @@ struct SliderInfo
 	float m_ScaleX;
 	float m_ScaleY;
 
-	SliderInfo(float x, float y, int angle, float scalex, float scaley)
+	SSliderInfo(float x, float y, int angle, float scalex, float scaley)
 	{
 		m_X = x;
 		m_Y = y;
@@ -24,12 +24,16 @@ struct SliderInfo
 class CUtil
 {
 public:
-	static float m_DeltaTime;
-	static float m_LastTime;
+	static SSliderInfo m_SliderInfo;
 
-	static SliderInfo g_SliderInfo;
-	static const int g_MaxX = 1024;
-	static const int g_MaxY = 768;
+	static const char* m_VertexShader;
+	static const char* m_FragmentShader;
 };
 
-extern GLFWwindow* m_Window;
+extern float g_DeltaTime;
+extern float g_LastTime;
+
+const int g_WindowMaxX = 1024;
+const int g_WindowMaxY = 768;
+
+extern GLFWwindow* g_Window;

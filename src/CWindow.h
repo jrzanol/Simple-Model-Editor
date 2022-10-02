@@ -7,11 +7,11 @@
 #include "CCamera.h"
 #include "CObject.h"
 
-class CWindowGL : CCamera
+class CWindow : CCamera
 {
 public:
-	CWindowGL();
-	~CWindowGL();
+	CWindow();
+	~CWindow();
 
 	bool Initialize();
 	void Cleanup();
@@ -20,11 +20,9 @@ public:
 private:
 	std::list<CDrawableObject*> m_DrawObject;
 	
-	GLuint CompileShader(const char*, GLenum);
-	GLuint LinkProgram(GLuint, GLuint);
 	GLuint m_ProgramId;
 
-	static const char* g_VertexShader;
-	static const char* g_FragmentShader;
+	GLuint CompileShader(const char*, GLenum);
+	GLuint LinkProgram(GLuint, GLuint);
 };
 
