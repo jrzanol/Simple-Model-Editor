@@ -5,7 +5,7 @@
 
 #include "CUtil.h"
 #include "CCamera.h"
-#include "CObject.h"
+#include "CModel.h"
 
 class CWindow : CCamera
 {
@@ -18,7 +18,7 @@ public:
 	bool Render();
 
 private:
-	std::list<CDrawableObject*> m_DrawObject;
+	std::list<CModel*> m_DrawModel;
 	
 	GLuint m_ProgramId;
 

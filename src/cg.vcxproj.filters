@@ -55,11 +55,14 @@
     <ClCompile Include="CWindow.cpp">
       <Filter>Interface</Filter>
     </ClCompile>
-    <ClCompile Include="CObject.cpp">
+    <ClCompile Include="CModel.cpp">
       <Filter>Model</Filter>
     </ClCompile>
-    <ClCompile Include="Util\CReadObj.cpp">
-      <Filter>Util</Filter>
+    <ClCompile Include="Model\CMesh.cpp">
+      <Filter>Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\CTexture.cpp">
+      <Filter>Model</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -78,11 +81,14 @@
     <ClInclude Include="CWindow.h">
       <Filter>Interface</Filter>
     </ClInclude>
-    <ClInclude Include="CObject.h">
+    <ClInclude Include="CModel.h">
       <Filter>Model</Filter>
     </ClInclude>
-    <ClInclude Include="Util\CReadObj.h">
-      <Filter>Util</Filter>
+    <ClInclude Include="Model\CMesh.h">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\CTexture.h">
+      <Filter>Model</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -56,20 +56,23 @@ bool CWindow::Initialize()
     ImGui_ImplGlfw_InitForOpenGL(g_Window, true);
     ImGui_ImplOpenGL3_Init();
 
-    std::cout << "Compilando os Shaders...\n";
+    glEnable(GL_DEPTH_TEST);
 
     /* Compile and Link Shaders */
+    std::cout << "Compilando o Vertex Shader...\n";
     GLuint vShaderId = CompileShader(CUtil::m_VertexShader, GL_VERTEX_SHADER);
-    GLuint fShaderId = CompileShader(CUtil::m_FragmentShader, GL_FRAGMENT_SHADER);
-    m_ProgramId = LinkProgram(vShaderId, fShaderId);
 
+    std::cout << "Compilando o Fragment Shader...\n";
+    GLuint fShaderId = CompileShader(CUtil::m_FragmentShader, GL_FRAGMENT_SHADER);
+
+    m_ProgramId = LinkProgram(vShaderId, fShaderId);
     std::cout << "Carregando os modelos...\n";
 
     // Use Shaders.
     glUseProgram(m_ProgramId);
     
     // Load Models.
-    m_DrawObject.push_back(new CDrawableObject(m_ProgramId, "Alien Animal.obj"));
+    m_DrawModel.push_back(CModel::LoadModel("Model/main.obj"));
 
     std::cout << "Iniciando...\n";
 	return true;
@@ -90,7 +93,7 @@ void CWindow::Cleanup()
 bool CWindow::Render()
 {
     // Clear OpenGl frame.
-    glClearColor(0, 0, 0, 0);
+    glClearColor(0, 0, 0, 1.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::mat4 projection = glm::perspective(glm::radians(m_Zoom), (float)g_WindowMaxY / (float)g_WindowMaxX, 0.1f, 100.0f);
@@ -100,8 +103,8 @@ bool CWindow::Render()
     glUniformMatrix4fv(glGetUniformLocation(m_ProgramId, "u_view"), 1, GL_FALSE, glm::value_ptr(view));
 
     // Draw objects.
-    for (const auto& it : m_DrawObject)
-        it->Draw();
+    for (const auto& it : m_DrawModel)
+        it->Draw(m_ProgramId);
 
     // Start the Dear ImGui frame.
     ImGui_ImplOpenGL3_NewFrame();

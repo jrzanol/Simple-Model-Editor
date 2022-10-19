@@ -8,7 +8,7 @@
 
 CCamera::CCamera()
 {
-    m_Position = glm::vec3(0.0f, 0.0f, 0.0f);
+    m_Position = glm::vec3(0.0f, 3.f, 7.f);
     m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
     m_Yaw = YAW;
     m_Pitch = PITCH;
@@ -73,9 +73,10 @@ void CCamera::ProcessMouseScroll(GLFWwindow* window, double _xoffset, double _yo
     float yoffset = static_cast<float>(_yoffset);
 
     m_Zoom -= (float)yoffset;
+
     if (m_Zoom < 1.0f)
         m_Zoom = 1.0f;
-    if (m_Zoom > 45.0f)
+    else if (m_Zoom > 45.0f)
         m_Zoom = 45.0f;
 }
 
@@ -97,7 +98,7 @@ void CCamera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean const
     {
         if (m_Pitch > 89.0f)
             m_Pitch = 89.0f;
-        if (m_Pitch < -89.0f)
+        else if (m_Pitch < -89.0f)
             m_Pitch = -89.0f;
     }
 
@@ -111,11 +112,11 @@ void CCamera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 
     if (direction == Camera_Movement::FORWARD)
         m_Position += m_Front * velocity;
-    if (direction == Camera_Movement::BACKWARD)
+    else if (direction == Camera_Movement::BACKWARD)
         m_Position -= m_Front * velocity;
-    if (direction == Camera_Movement::LEFT)
+    else if (direction == Camera_Movement::LEFT)
         m_Position -= m_Right * velocity;
-    if (direction == Camera_Movement::RIGHT)
+    else if (direction == Camera_Movement::RIGHT)
         m_Position += m_Right * velocity;
 }
 
