@@ -17,6 +17,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Editor">
+      <UniqueIdentifier>{881fe445-063c-4411-a0e8-91a75b79a409}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -43,12 +46,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Main</Filter>
     </ClCompile>
-    <ClCompile Include="CUtil.cpp">
-      <Filter>Util</Filter>
-    </ClCompile>
-    <ClCompile Include="CEvent.cpp">
-      <Filter>Util</Filter>
-    </ClCompile>
     <ClCompile Include="CCamera.cpp">
       <Filter>Interface</Filter>
     </ClCompile>
@@ -64,16 +61,19 @@
     <ClCompile Include="Model\CTexture.cpp">
       <Filter>Model</Filter>
     </ClCompile>
+    <ClCompile Include="Util\CEvent.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\CUtil.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\CPickItem.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
       <Filter>Main</Filter>
-    </ClInclude>
-    <ClInclude Include="CUtil.h">
-      <Filter>Util</Filter>
-    </ClInclude>
-    <ClInclude Include="CEvent.h">
-      <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="CCamera.h">
       <Filter>Interface</Filter>
@@ -89,6 +89,15 @@
     </ClInclude>
     <ClInclude Include="Model\CTexture.h">
       <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\CEvent.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\CUtil.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\CPickItem.h">
+      <Filter>Editor</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -20,5 +20,5 @@ public:
 	static void Initialize();
 };
 
-extern std::vector<CEvent*> g_EventList;
+extern std::vector<CEvent*>* g_EventList;
 

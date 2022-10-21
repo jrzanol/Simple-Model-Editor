@@ -200,10 +200,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="CCamera.cpp" />
-    <ClCompile Include="CEvent.cpp" />
     <ClCompile Include="CModel.cpp" />
-    <ClCompile Include="CUtil.cpp" />
     <ClCompile Include="CWindow.cpp" />
+    <ClCompile Include="Editor\CPickItem.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Model\CMesh.cpp" />
     <ClCompile Include="Model\CTexture.cpp" />
@@ -213,16 +212,19 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Util\CEvent.cpp" />
+    <ClCompile Include="Util\CUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CCamera.h" />
-    <ClInclude Include="CEvent.h" />
     <ClInclude Include="CModel.h" />
     <ClInclude Include="CWindow.h" />
+    <ClInclude Include="Editor\CPickItem.h" />
     <ClInclude Include="Model\CMesh.h" />
     <ClInclude Include="Model\CTexture.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="CUtil.h" />
+    <ClInclude Include="Util\CEvent.h" />
+    <ClInclude Include="Util\CUtil.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -17,12 +17,17 @@ public:
 	void Cleanup();
 	bool Render();
 
+	static const glm::mat4& GetMVP();
+	static const std::list<CModel*>& GetModels();
+
 private:
-	std::list<CModel*> m_DrawModel;
-	
 	GLuint m_ProgramId;
+	GLuint m_PickingProgramId;
 
 	GLuint CompileShader(const char*, GLenum);
 	GLuint LinkProgram(GLuint, GLuint);
+
+	static glm::mat4 m_MVP;
+	static std::list<CModel*> m_DrawModel;
 };
 

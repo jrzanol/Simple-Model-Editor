@@ -36,3 +36,4 @@ src/out
 *.app
 /bin/*.pdb
 /x64/bin
+/bin/Model2

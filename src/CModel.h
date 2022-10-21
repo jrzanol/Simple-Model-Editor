@@ -14,13 +14,13 @@ public:
 
 	void Draw(GLuint) const;
 
+	std::string m_ObjName;
+	std::vector<CMesh> m_Meshes;
+
 	// Load File or Find Object.
 	static CModel* LoadModel(std::string);
 
 private:
-	std::string m_ObjName;
-	std::vector<CMesh> m_Meshes;
-
 	void ProcessModelNode(aiNode*, const aiScene*);
 	CMesh ProcessModelMesh(aiMesh*, const aiScene*);
 

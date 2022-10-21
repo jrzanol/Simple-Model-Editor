@@ -27,7 +27,12 @@ public:
 	static SSliderInfo m_SliderInfo;
 
 	static const char* m_VertexShader;
+	static const char* m_PickingVertexShader;
+
 	static const char* m_FragmentShader;
+	static const char* m_PickingFragmentShader;
+
+	static bool IntersectSphere(const glm::vec3&, const glm::vec3&, float, float&, float&);
 };
 
 extern float g_DeltaTime;

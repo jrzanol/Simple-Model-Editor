@@ -27,7 +27,7 @@ int main(int argc, const char* argv[])
 
         if (currentSecTimer != lastSecTimer)
         {
-            for (const auto& it : g_EventList)
+            for (const auto& it : *g_EventList)
                 it->ProcessSecTimer();
             
             lastSecTimer = currentSecTimer;
@@ -35,7 +35,7 @@ int main(int argc, const char* argv[])
 
         if (currentMinTimer != lastMinTimer)
         {
-            for (const auto& it : g_EventList)
+            for (const auto& it : *g_EventList)
                 it->ProcessMinTimer();
 
             lastMinTimer = currentMinTimer;

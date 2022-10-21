@@ -4,15 +4,22 @@
 #include "stdafx.h"
 #include "CWindow.h"
 
+glm::mat4 CWindow::m_MVP;
+std::list<CModel*> CWindow::m_DrawModel;
+
 CWindow::CWindow() : CCamera()
 {
     g_Window = NULL;
     m_ProgramId = 0;
+    m_PickingProgramId = 0;
 }
 
 CWindow::~CWindow()
 {
 }
+
+const glm::mat4& CWindow::GetMVP() { return m_MVP; }
+const std::list<CModel*>& CWindow::GetModels() { return m_DrawModel; }
 
 bool CWindow::Initialize()
 {
@@ -56,23 +63,37 @@ bool CWindow::Initialize()
     ImGui_ImplGlfw_InitForOpenGL(g_Window, true);
     ImGui_ImplOpenGL3_Init();
 
+    // Enable depth test
     glEnable(GL_DEPTH_TEST);
+    // Accept fragment if it closer to the camera than the former one
+    glDepthFunc(GL_LESS);
+
+    // Cull triangles which normal is not towards the camera
+    glEnable(GL_CULL_FACE);
 
     /* Compile and Link Shaders */
     std::cout << "Compilando o Vertex Shader...\n";
     GLuint vShaderId = CompileShader(CUtil::m_VertexShader, GL_VERTEX_SHADER);
+    GLuint vPickShaderId = CompileShader(CUtil::m_PickingVertexShader, GL_VERTEX_SHADER);
 
     std::cout << "Compilando o Fragment Shader...\n";
     GLuint fShaderId = CompileShader(CUtil::m_FragmentShader, GL_FRAGMENT_SHADER);
+    GLuint fPickShaderId = CompileShader(CUtil::m_PickingFragmentShader, GL_FRAGMENT_SHADER);
 
     m_ProgramId = LinkProgram(vShaderId, fShaderId);
-    std::cout << "Carregando os modelos...\n";
+    m_PickingProgramId = LinkProgram(vPickShaderId, fPickShaderId);
 
     // Use Shaders.
     glUseProgram(m_ProgramId);
-    
+
+    std::cout << "Carregando os modelos...\n";
+
     // Load Models.
     m_DrawModel.push_back(CModel::LoadModel("Model/main.obj"));
+
+    // Configure the Lines.
+    glLineWidth(2.f);
+    glEnable(GL_LINE_SMOOTH);
 
     std::cout << "Iniciando...\n";
 	return true;
@@ -93,14 +114,19 @@ void CWindow::Cleanup()
 bool CWindow::Render()
 {
     // Clear OpenGl frame.
-    glClearColor(0, 0, 0, 1.f);
+    glClearColor(0.25f, 0.25f, 0.25f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::mat4 projection = glm::perspective(glm::radians(m_Zoom), (float)g_WindowMaxY / (float)g_WindowMaxX, 0.1f, 100.0f);
-    glUniformMatrix4fv(glGetUniformLocation(m_ProgramId, "u_proj"), 1, GL_FALSE, glm::value_ptr(projection));
-
     glm::mat4 view = GetViewMatrix();
-    glUniformMatrix4fv(glGetUniformLocation(m_ProgramId, "u_view"), 1, GL_FALSE, glm::value_ptr(view));
+    glm::mat4 model(1.f);
+
+    model = glm::translate(model, glm::vec3(CUtil::m_SliderInfo.m_X, CUtil::m_SliderInfo.m_Y, 0.f));
+    model = glm::scale(model, glm::vec3(CUtil::m_SliderInfo.m_ScaleX, CUtil::m_SliderInfo.m_ScaleY, 1.f));
+    model = glm::rotate(model, glm::radians((float)CUtil::m_SliderInfo.m_Angle), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    m_MVP = (projection * view * model);
+    glUniformMatrix4fv(glGetUniformLocation(m_ProgramId, "u_mvp"), 1, GL_FALSE, glm::value_ptr(m_MVP));
 
     // Draw objects.
     for (const auto& it : m_DrawModel)
@@ -131,7 +157,7 @@ bool CWindow::Render()
     glfwPollEvents();
 
     // Process Input events.
-    for (const auto& it : g_EventList)
+    for (const auto& it : *g_EventList)
         it->ProcessInput(g_Window);
 
     return glfwWindowShouldClose(g_Window);
