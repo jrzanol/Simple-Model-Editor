@@ -85,10 +85,9 @@ const char* CUtil::m_PickingFragmentShader = R"glsl(
 //ray at position p with direction d intersects sphere at (0,0,0) with radius r. returns intersection times along ray t1 and t2
 bool CUtil::IntersectSphere(const glm::vec3& p, const glm::vec3& d, float r, float& t1, float& t2)
 {
-    float A = glm::dot(d, d);// d.dot(d);
-    float B = 2.0f * glm::dot(d, p);// d.dot(p);
-    float C = glm::dot(p, p) /* p.dot(p)*/ - r * r;
-
+    float A = glm::dot(d, d);
+    float B = 2.0f * glm::dot(d, p);
+    float C = glm::dot(p, p) - r * r;
     float dis = B * B - 4.0f * A * C;
 
     if (dis < 0.0f)
@@ -99,4 +98,48 @@ bool CUtil::IntersectSphere(const glm::vec3& p, const glm::vec3& d, float r, flo
     t1 = (-B - S) / (2.0f * A);
     t2 = (-B + S) / (2.0f * A);
     return true;
+}
+
+// https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+bool CUtil::RayIntersectsTriangle(glm::vec3 rayOrigin, glm::vec3 rayVector, glm::vec3* inTriangle, glm::vec3& outIntersectionPoint)
+{
+    const float EPSILON = 0.0000001f;
+
+    glm::vec3 vertex0 = inTriangle[0];
+    glm::vec3 vertex1 = inTriangle[1];
+    glm::vec3 vertex2 = inTriangle[2];
+    glm::vec3 edge1, edge2, h, s, q;
+    float a, f, u, v;
+
+    edge1 = vertex1 - vertex0;
+    edge2 = vertex2 - vertex0;
+
+    h = glm::cross(rayVector, edge2);// rayVector.crossProduct(edge2);
+    a = glm::dot(edge1, h);// edge1.dotProduct(h);
+
+    if (a > -EPSILON && a < EPSILON)
+        return false;    // This ray is parallel to this triangle.
+
+    f = 1.0f / a;
+    s = rayOrigin - vertex0;
+    u = f * glm::dot(s, h);// s.dotProduct(h);
+
+    if (u < 0.0f || u > 1.0f)
+        return false;
+
+    q = glm::cross(s, edge1);// s.crossProduct(edge1);
+    v = f * glm::dot(rayVector, q);// rayVector.dotProduct(q);
+
+    if (v < 0.0f || u + v > 1.0f)
+        return false;
+
+    // At this stage we can compute t to find out where the intersection point is on the line.
+    float t = f * glm::dot(edge2, q);// edge2.dotProduct(q);
+    if (t > EPSILON) // ray intersection
+    {
+        outIntersectionPoint = rayOrigin + rayVector * t;
+        return true;
+    }
+    else // This means that there is a line intersection but not a ray intersection.
+        return false;
 }

@@ -33,6 +33,7 @@ public:
 	static const char* m_PickingFragmentShader;
 
 	static bool IntersectSphere(const glm::vec3&, const glm::vec3&, float, float&, float&);
+	static bool RayIntersectsTriangle(glm::vec3, glm::vec3, glm::vec3*, glm::vec3&);
 };
 
 extern float g_DeltaTime;

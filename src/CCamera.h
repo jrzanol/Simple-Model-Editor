@@ -14,7 +14,7 @@ public:
 	void ProcessInput(GLFWwindow*);
 
 	void ProcessMouseButtonEvent(GLFWwindow*, int, int, int);
-	void ProcessMouseEvent(GLFWwindow*, double, double);
+	void ProcessMouseDragEvent(GLFWwindow*, float, float);
 	void ProcessMouseScroll(GLFWwindow*, double, double);
 
 protected:
@@ -24,8 +24,6 @@ protected:
 	float m_Zoom;
 
 private:
-	bool m_FirstMouse;
-
 	// Camera Attributes.
 	glm::vec3 m_Position;
 	glm::vec3 m_Front;
@@ -48,9 +46,6 @@ private:
 		LEFT,
 		RIGHT
 	};
-
-	// Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
-	void ProcessMouseMovement(float, float, GLboolean = true);
 
 	// Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
 	void ProcessKeyboard(Camera_Movement, float);

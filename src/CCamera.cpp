@@ -4,7 +4,9 @@
 #include "stdafx.h"
 
 #include "CUtil.h"
+#include "CModel.h"
 #include "CCamera.h"
+#include "CPickItem.h"
 
 CCamera::CCamera()
 {
@@ -12,7 +14,6 @@ CCamera::CCamera()
     m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
     m_Yaw = YAW;
     m_Pitch = PITCH;
-    m_FirstMouse = true;
     m_Zoom = 45.f;
 
     UpdateCameraVectors();
@@ -39,33 +40,27 @@ void CCamera::ProcessInput(GLFWwindow* window)
 
 void CCamera::ProcessMouseButtonEvent(GLFWwindow* window, int button, int action, int mods)
 {
-    if (button == GLFW_MOUSE_BUTTON_LEFT)
-    {
-        if (action == GLFW_PRESS)
-            m_FirstMouse = false;
-        else if (action == GLFW_RELEASE)
-            m_FirstMouse = true;
-    }
 }
 
-void CCamera::ProcessMouseEvent(GLFWwindow* window, double xposIn, double yposIn)
+void CCamera::ProcessMouseDragEvent(GLFWwindow* window, float xoffset, float yoffset)
 {
-    float xpos = static_cast<float>(xposIn);
-    float ypos = static_cast<float>(yposIn);
+    if (CPickItem::g_ClickedObject.size() > 0)
+        return;
 
-    if (m_FirstMouse)
-    {
-        m_LastX = xpos;
-        m_LastY = ypos;
-    }
+    xoffset *= SENSITIVITY;
+    yoffset *= SENSITIVITY;
 
-    float xoffset = xpos - m_LastX;
-    float yoffset = m_LastY - ypos; // reversed since y-coordinates go from bottom to top
+    m_Yaw += xoffset;
+    m_Pitch += yoffset;
 
-    m_LastX = xpos;
-    m_LastY = ypos;
+    // make sure that when pitch is out of bounds, screen doesn't get flipped
+    if (m_Pitch > 89.0f)
+        m_Pitch = 89.0f;
+    else if (m_Pitch < -89.0f)
+        m_Pitch = -89.0f;
 
-    ProcessMouseMovement(xoffset, yoffset);
+    // update Front, Right and Up Vectors using the updated Euler angles
+    UpdateCameraVectors();
 }
 
 void CCamera::ProcessMouseScroll(GLFWwindow* window, double _xoffset, double _yoffset)
@@ -83,27 +78,6 @@ void CCamera::ProcessMouseScroll(GLFWwindow* window, double _xoffset, double _yo
 glm::mat4 CCamera::GetViewMatrix()
 {
     return glm::lookAt(m_Position, m_Position + m_Front, m_Up);
-}
-
-void CCamera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch)
-{
-    xoffset *= SENSITIVITY;
-    yoffset *= SENSITIVITY;
-
-    m_Yaw += xoffset;
-    m_Pitch += yoffset;
-
-    // make sure that when pitch is out of bounds, screen doesn't get flipped
-    if (constrainPitch)
-    {
-        if (m_Pitch > 89.0f)
-            m_Pitch = 89.0f;
-        else if (m_Pitch < -89.0f)
-            m_Pitch = -89.0f;
-    }
-
-    // update Front, Right and Up Vectors using the updated Euler angles
-    UpdateCameraVectors();
 }
 
 void CCamera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
@@ -129,6 +103,8 @@ void CCamera::UpdateCameraVectors()
     front.z = sin(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
 
     m_Front = glm::normalize(front);
+    float angle = 180.f/atan2f(m_Front.y, m_Front.x);
+
     // also re-calculate the Right and Up vector
     m_Right = glm::normalize(glm::cross(m_Front, m_WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
     m_Up = glm::normalize(glm::cross(m_Right, m_Front));

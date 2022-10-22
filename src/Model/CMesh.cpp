@@ -49,6 +49,21 @@ CMesh::CMesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void CMesh::AllocBuffer() const
+{
+    // Set Vertex buffer.
+    glBindVertexArray(m_VAOId);
+    glBindBuffer(GL_ARRAY_BUFFER, m_VBOId);
+    glBufferData(GL_ARRAY_BUFFER, m_Vertex.size() * sizeof(Vertex), &m_Vertex[0], GL_STATIC_DRAW);
+
+    // Set Indices buffer.
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBOId);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_Indices.size() * sizeof(unsigned int), &m_Indices[0], GL_STATIC_DRAW);
+
+    // Unbind the active buffer.
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 void CMesh::Draw(GLuint programId) const
 {
     unsigned int diffuseNr = 1;
