@@ -38,7 +38,7 @@ public:
 	CMesh(const std::vector<Vertex>&, const std::vector<unsigned int>&, const std::vector<Texture>&);
 
 	void Draw(GLuint) const;
-	void AllocBuffer() const;
+	void AllocBuffer();
 
 	std::vector<Vertex> m_Vertex;
 	std::vector<Texture> m_Textures;
@@ -48,5 +48,7 @@ private:
 	GLuint m_VBOId;
 	GLuint m_EBOId;
 	GLuint m_VAOId;
+
+	void CalculateNormals();
 };
 

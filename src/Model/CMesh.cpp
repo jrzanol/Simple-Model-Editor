@@ -49,8 +49,10 @@ CMesh::CMesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void CMesh::AllocBuffer() const
+void CMesh::AllocBuffer()
 {
+    CalculateNormals();
+
     // Set Vertex buffer.
     glBindVertexArray(m_VAOId);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBOId);
@@ -64,6 +66,40 @@ void CMesh::AllocBuffer() const
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void CMesh::CalculateNormals() {
+    // https://stackoverflow.com/questions/30120636/calculating-vertex-normals-in-opengl-with-c
+
+    // Clear each normal
+    for (unsigned int i = 0; i < m_Vertex.size(); i++)
+        m_Vertex[i].Normal = glm::vec3(0, 0, 0);
+
+    // For each face calculate normals and append it
+    // to the corresponding vertices of the face
+    for (unsigned int i = 0; i < m_Indices.size(); i += 3) {
+        glm::vec3 A = m_Vertex[m_Indices[i]].Position;
+        glm::vec3 B = m_Vertex[m_Indices[i + 1LL]].Position;
+        glm::vec3 C = m_Vertex[m_Indices[i + 2LL]].Position;
+
+        auto computeFaceNormal = [](glm::vec3 p1, glm::vec3 p2, glm::vec3 p3) {
+            // Uses p2 as a new origin for p1,p3
+            auto a = p3 - p2;
+            auto b = p1 - p2;
+            // Compute the cross product a X b to get the face normal
+            return glm::normalize(glm::cross(a, b));
+        };
+
+        glm::vec3 normal = computeFaceNormal(A, B, C);
+
+        m_Vertex[m_Indices[i]].Normal += normal;
+        m_Vertex[m_Indices[i + 1LL]].Normal += normal;
+        m_Vertex[m_Indices[i + 2LL]].Normal += normal;
+    }
+
+    // Normalize each normal
+    for (unsigned int i = 0; i < m_Vertex.size(); i++)
+        m_Vertex[i].Normal = glm::normalize(m_Vertex[i].Normal);
+}
+
 void CMesh::Draw(GLuint programId) const
 {
     unsigned int diffuseNr = 1;
@@ -71,7 +107,7 @@ void CMesh::Draw(GLuint programId) const
     unsigned int normalNr = 1;
     unsigned int heightNr = 1;
 
-    for (unsigned int i = 0; i < m_Textures.size(); i++)
+    unsigned int i = CUtil::m_TextureType;
     {
         // Ativa a Textura atual a ser renderizada.
         glActiveTexture(GL_TEXTURE0 + i);

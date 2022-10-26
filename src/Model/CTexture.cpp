@@ -24,11 +24,18 @@ std::vector<Texture> CTexture::LoadMaterialTextures(aiMaterial* mat, aiTextureTy
     }
 
     std::vector<Texture> textures;
+    unsigned int maxTex = mat->GetTextureCount(type);
 
-    for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
+    for (unsigned int i = 0; i < maxTex + 2; i++)
     {
         aiString str;
-        mat->GetTexture(type, i, &str);
+
+        if (i < maxTex)
+            mat->GetTexture(type, i, &str);
+        else if (i == maxTex)
+            str = aiString("Model/crate_2.jpg");
+        else if (i == maxTex + 1)
+            str = aiString("Model/crate_3.jpg");
 
         // check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
         bool skip = false;

@@ -139,11 +139,18 @@ bool CWindow::Render()
 
     // Create ImGui Sliders.
     ImGui::Begin("Infos:");
-    ImGui::SliderFloat("X", &CUtil::m_SliderInfo.m_X, -2.f, 2.f);
-    ImGui::SliderFloat("Y", &CUtil::m_SliderInfo.m_Y, -2.f, 2.f);
-    ImGui::SliderInt("Angle", &CUtil::m_SliderInfo.m_Angle, 0, 360);
-    ImGui::SliderFloat("Scale X", &CUtil::m_SliderInfo.m_ScaleX, -5.f, 5.f);
-    ImGui::SliderFloat("Scale Y", &CUtil::m_SliderInfo.m_ScaleY, -5.f, 5.f);
+        ImGui::SliderFloat("X", &CUtil::m_SliderInfo.m_X, -2.f, 2.f);
+        ImGui::SliderFloat("Y", &CUtil::m_SliderInfo.m_Y, -2.f, 2.f);
+        ImGui::SliderInt("Angle", &CUtil::m_SliderInfo.m_Angle, 0, 360);
+        ImGui::SliderFloat("Scale X", &CUtil::m_SliderInfo.m_ScaleX, -5.f, 5.f);
+        ImGui::SliderFloat("Scale Y", &CUtil::m_SliderInfo.m_ScaleY, -5.f, 5.f);
+        ImGui::Separator();
+        ImGui::RadioButton("Arrastar Vertices/Triangulos", &CUtil::m_EditorType, 0);
+        ImGui::RadioButton("Criar novo Vertices", &CUtil::m_EditorType, 1);
+        ImGui::Separator();
+        ImGui::RadioButton("Textura Padrao", &CUtil::m_TextureType, 0);
+        ImGui::RadioButton("Textura #02", &CUtil::m_TextureType, 1);
+        ImGui::RadioButton("Textura #03", &CUtil::m_TextureType, 2);
     ImGui::End();
 
     // Rendering the ImGui.

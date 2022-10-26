@@ -55,21 +55,30 @@ void CPickItem::ProcessMouseButtonEvent(GLFWwindow* window, int button, int acti
 
             glm::vec3 direction = (glm::vec3(to) - glm::vec3(from));
 
-            for (CModel* it : CWindow::GetModels())
-            {
-                for (CMesh& mesh : it->m_Meshes)
-                {
-                    for (Vertex& v : mesh.m_Vertex)
-                    {
-                        float t1, t2;
+            bool findedSphere = false;
+            bool findedTriangle = false;
 
-                        if (CUtil::IntersectSphere((glm::vec3(from) - v.Position), direction, 0.10f, t1, t2))
-                            g_ClickedObject.push_back(std::make_tuple(&mesh, &v));
+            if (CUtil::m_EditorType == 0)
+            {
+                for (CModel* it : CWindow::GetModels())
+                {
+                    for (CMesh& mesh : it->m_Meshes)
+                    {
+                        for (Vertex& v : mesh.m_Vertex)
+                        {
+                            float t1, t2;
+
+                            if (CUtil::IntersectSphere((glm::vec3(from) - v.Position), direction, 0.10f, t1, t2))
+                            {
+                                g_ClickedObject.push_back(std::make_tuple(&mesh, &v));
+                                findedSphere = true;
+                            }
+                        }
                     }
                 }
             }
 
-            if (g_ClickedObject.size() == 0)
+            if (!findedSphere || CUtil::m_EditorType == 1)
             {
                 glm::vec3 outIntersectionPoint;
                 int minDistOfSurface = 9999999;
@@ -99,6 +108,7 @@ void CPickItem::ProcessMouseButtonEvent(GLFWwindow* window, int button, int acti
                                     indices = &itmesh.m_Indices[id];
 
                                     minDistOfSurface = dist;
+                                    findedTriangle = true;
                                 }
                             }
                         }
@@ -107,42 +117,72 @@ void CPickItem::ProcessMouseButtonEvent(GLFWwindow* window, int button, int acti
 
                 if (mesh && indices)
                 {
-                    printf("face: %d %d %d\n", indices[0], indices[1], indices[2]);
+                    if (CUtil::m_EditorType == 1)
+                    {
+                        const Vertex& A = mesh->m_Vertex[indices[0]];
+                        const Vertex& B = mesh->m_Vertex[indices[1]];
+                        const Vertex& C = mesh->m_Vertex[indices[2]];
 
-                    const glm::vec3& A = mesh->m_Vertex[indices[0]].Position;
-                    const glm::vec3& B = mesh->m_Vertex[indices[1]].Position;
-                    const glm::vec3& C = mesh->m_Vertex[indices[2]].Position;
+                        Vertex centerOfTriangle; centerOfTriangle.Clear();
+                        centerOfTriangle.Position = (glm::vec3((A.Position + B.Position + C.Position) / 3.f));
+                        centerOfTriangle.TexCoords = (glm::vec2((A.TexCoords + B.TexCoords + C.TexCoords) / 3.f));
 
-                    Vertex centerOfTriangle; centerOfTriangle.Clear();
-                    centerOfTriangle.Position = (glm::vec3((A + B + C) / 3.f));
+                        int vertexId = mesh->m_Vertex.size();
+                        mesh->m_Vertex.push_back(centerOfTriangle);
 
-                    int vertexId = mesh->m_Vertex.size();
-                    mesh->m_Vertex.push_back(centerOfTriangle);
+                        unsigned int prevA = indices[0];
+                        unsigned int prevB = indices[1];
+                        unsigned int prevC = indices[2];
 
-                    unsigned int prevA = indices[0];
-                    unsigned int prevB = indices[1];
-                    unsigned int prevC = indices[2];
+                        // A, B, G
+                        indices[2] = vertexId;
 
-                    // A, B, G
-                    indices[2] = vertexId;
+                        // A, G, C
+                        mesh->m_Indices.push_back(prevA);
+                        mesh->m_Indices.push_back(vertexId);
+                        mesh->m_Indices.push_back(prevC);
 
-                    // A, C, G
-                    mesh->m_Indices.push_back(prevA);
-                    mesh->m_Indices.push_back(prevC);
-                    mesh->m_Indices.push_back(vertexId);
+                        // B, C, G
+                        mesh->m_Indices.push_back(prevB);
+                        mesh->m_Indices.push_back(prevC);
+                        mesh->m_Indices.push_back(vertexId);
 
-                    // B, C, G
-                    mesh->m_Indices.push_back(prevB);
-                    mesh->m_Indices.push_back(prevC);
-                    mesh->m_Indices.push_back(vertexId);
+                        mesh->AllocBuffer();
+                    }
+                    else
+                    {
+                        Vertex* A = &mesh->m_Vertex[indices[0]];
+                        Vertex* B = &mesh->m_Vertex[indices[1]];
+                        Vertex* C = &mesh->m_Vertex[indices[2]];
 
-                    mesh->AllocBuffer();
+                        auto addVertexInClickedObj = [](CMesh* m, Vertex* v) {
+                            bool finded = false;
+
+                            for (const std::tuple<CMesh*, Vertex*> it : g_ClickedObject)
+                            {
+                                if (v == std::get<1>(it))
+                                {
+                                    finded = true;
+                                    break;
+                                }
+                            }
+
+                            if (!finded)
+                                g_ClickedObject.push_back(std::make_tuple(m, v));
+                        };
+
+                        addVertexInClickedObj(mesh, A);
+                        addVertexInClickedObj(mesh, B);
+                        addVertexInClickedObj(mesh, C);
+                    }
                 }
             }
+
+            if (!findedSphere && !findedTriangle)
+                g_ClickedObject.clear();
         }
         else if (action == GLFW_RELEASE)
         {
-            g_ClickedObject.clear();
         }
     }
 }

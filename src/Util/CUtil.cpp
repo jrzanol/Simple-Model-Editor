@@ -11,6 +11,9 @@ float g_LastTime = 0;
 
 SSliderInfo CUtil::m_SliderInfo(0.f, 0.f, 0, 1.f, 1.f);
 
+int CUtil::m_EditorType = 1;
+int CUtil::m_TextureType = 0;
+
 const char* CUtil::m_VertexShader = R"glsl(
     #version 430
 
@@ -114,27 +117,28 @@ bool CUtil::RayIntersectsTriangle(glm::vec3 rayOrigin, glm::vec3 rayVector, glm:
     edge1 = vertex1 - vertex0;
     edge2 = vertex2 - vertex0;
 
-    h = glm::cross(rayVector, edge2);// rayVector.crossProduct(edge2);
-    a = glm::dot(edge1, h);// edge1.dotProduct(h);
+    h = glm::cross(rayVector, edge2);
+    a = glm::dot(edge1, h);
 
     if (a > -EPSILON && a < EPSILON)
         return false;    // This ray is parallel to this triangle.
 
     f = 1.0f / a;
     s = rayOrigin - vertex0;
-    u = f * glm::dot(s, h);// s.dotProduct(h);
+    u = f * glm::dot(s, h);
 
     if (u < 0.0f || u > 1.0f)
         return false;
 
-    q = glm::cross(s, edge1);// s.crossProduct(edge1);
-    v = f * glm::dot(rayVector, q);// rayVector.dotProduct(q);
+    q = glm::cross(s, edge1);
+    v = f * glm::dot(rayVector, q);
 
     if (v < 0.0f || u + v > 1.0f)
         return false;
 
     // At this stage we can compute t to find out where the intersection point is on the line.
-    float t = f * glm::dot(edge2, q);// edge2.dotProduct(q);
+    float t = f * glm::dot(edge2, q);
+
     if (t > EPSILON) // ray intersection
     {
         outIntersectionPoint = rayOrigin + rayVector * t;

@@ -26,6 +26,9 @@ class CUtil
 public:
 	static SSliderInfo m_SliderInfo;
 
+	static int m_EditorType;
+	static int m_TextureType;
+
 	static const char* m_VertexShader;
 	static const char* m_PickingVertexShader;
 
