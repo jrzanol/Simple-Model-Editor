@@ -24,45 +24,48 @@ std::vector<Texture> CTexture::LoadMaterialTextures(aiMaterial* mat, aiTextureTy
     }
 
     std::vector<Texture> textures;
+
     unsigned int maxTex = mat->GetTextureCount(type);
-
-    for (unsigned int i = 0; i < maxTex + 2; i++)
+    if (maxTex > 0)
     {
-        aiString str;
-
-        if (i < maxTex)
-            mat->GetTexture(type, i, &str);
-        else if (i == maxTex)
-            str = aiString("Model/crate_2.jpg");
-        else if (i == maxTex + 1)
-            str = aiString("Model/crate_3.jpg");
-
-        // check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
-        bool skip = false;
-
-        for (int j = 0; j < g_ListCounter; j++)
+        for (unsigned int i = 0; i < maxTex + 2; i++)
         {
-            if (std::strcmp(g_List[j].m_Path.data(), str.C_Str()) == 0)
-            {
-                textures.push_back(g_List[j]);
-                skip = true; // a texture with the same filepath has already been loaded, continue to next one. (optimization)
-                break;
-            }
-        }
+            aiString str;
 
-        if (!skip)
-        {   // if texture hasn't been loaded already, load it
-            for (int j = g_ListCounter; j < MAX_TEXTURE; j++)
+            if (i < maxTex)
+                mat->GetTexture(type, i, &str);
+            else if (i == maxTex)
+                str = aiString("crate_2.jpg");
+            else if (i == maxTex + 1)
+                str = aiString("crate_3.jpg");
+
+            // check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
+            bool skip = false;
+
+            for (int j = 0; j < g_ListCounter; j++)
             {
-                if (g_List[j].m_Id == -1)
+                if (std::strcmp(g_List[j].m_Path.data(), str.C_Str()) == 0)
                 {
-                    g_List[j].m_Id = TextureFromFile(str.C_Str(), directory);
-                    g_List[j].m_Type = typeName;
-                    g_List[j].m_Path = str.C_Str();
-                    g_ListCounter++;
-
                     textures.push_back(g_List[j]);
+                    skip = true; // a texture with the same filepath has already been loaded, continue to next one. (optimization)
                     break;
+                }
+            }
+
+            if (!skip)
+            {   // if texture hasn't been loaded already, load it
+                for (int j = g_ListCounter; j < MAX_TEXTURE; j++)
+                {
+                    if (g_List[j].m_Id == -1)
+                    {
+                        g_List[j].m_Id = TextureFromFile(str.C_Str(), directory);
+                        g_List[j].m_Type = typeName;
+                        g_List[j].m_Path = str.C_Str();
+                        g_ListCounter++;
+
+                        textures.push_back(g_List[j]);
+                        break;
+                    }
                 }
             }
         }

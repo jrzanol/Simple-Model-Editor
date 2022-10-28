@@ -29,5 +29,7 @@ private:
 
 	static glm::mat4 m_MVP;
 	static std::list<CModel*> m_DrawModel;
+
+	static void SaveModel();
 };
 

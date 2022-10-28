@@ -89,7 +89,7 @@ bool CWindow::Initialize()
     std::cout << "Carregando os modelos...\n";
 
     // Load Models.
-    m_DrawModel.push_back(CModel::LoadModel("Model/main.obj"));
+    m_DrawModel.push_back(CModel::LoadModel("Model/main_out.obj"));
 
     // Configure the Lines.
     glLineWidth(2.f);
@@ -151,6 +151,14 @@ bool CWindow::Render()
         ImGui::RadioButton("Textura Padrao", &CUtil::m_TextureType, 0);
         ImGui::RadioButton("Textura #02", &CUtil::m_TextureType, 1);
         ImGui::RadioButton("Textura #03", &CUtil::m_TextureType, 2);
+        ImGui::Separator();
+        if (ImGui::Button("Save"))
+        {
+            CWindow::SaveModel();
+
+            ImGui::SameLine();
+            ImGui::Text("Salvo!");
+        }
     ImGui::End();
 
     // Rendering the ImGui.
@@ -168,6 +176,43 @@ bool CWindow::Render()
         it->ProcessInput(g_Window);
 
     return glfwWindowShouldClose(g_Window);
+}
+
+void CWindow::SaveModel()
+{
+    CModel* currentModel = CWindow::GetModels().front();
+
+    FILE* out = fopen("Model/main_out.obj", "wt");
+    if (out)
+    {
+        fprintf(out, "# Simple 3D Editor\n");
+        fprintf(out, "mtllib Crate1.mtl\n");
+
+        int objId = 1;
+
+        for (CMesh& mesh : currentModel->m_Meshes)
+        {
+            fprintf(out, "o Object.%03d\n", objId++);
+
+            for (Vertex& v : mesh.m_Vertex)
+                fprintf(out, "v %.6f %.6f %.6f\n", v.Position.x, v.Position.y, v.Position.z);
+
+            for (Vertex& v : mesh.m_Vertex)
+                fprintf(out, "vt %.6f %.6f\n", v.TexCoords.x, (1.f - v.TexCoords.y));
+        }
+
+        fprintf(out, "usemtl Material.001\n");
+        fprintf(out, "s off\n");
+
+        for (CMesh& mesh : currentModel->m_Meshes)
+            for (size_t i = 0; i < mesh.m_Indices.size(); i += 3)
+                fprintf(out, "f %u/%u %u/%u %u/%u\n",
+                    mesh.m_Indices[i] + 1, mesh.m_Indices[i] + 1,
+                    mesh.m_Indices[i + 1] + 1, mesh.m_Indices[i + 1] + 1,
+                    mesh.m_Indices[i + 2] + 1, mesh.m_Indices[i + 2] + 1);
+
+        fclose(out);
+    }
 }
 
 GLuint CWindow::CompileShader(const char* shaderCode, GLenum type)
