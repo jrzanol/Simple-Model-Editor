@@ -9,7 +9,7 @@ GLFWwindow* g_Window = NULL;
 float g_DeltaTime = 0;
 float g_LastTime = 0;
 
-SSliderInfo CUtil::m_SliderInfo(0.f, 0.f, 0, 1.f, 1.f);
+SSliderInfo CUtil::m_SliderInfo(0.f, 0.f, 0, 1.f, 1.f, 0.f);
 
 int CUtil::m_EditorType = 1;
 int CUtil::m_TextureType = 0;
@@ -60,13 +60,18 @@ const char* CUtil::m_FragmentShader = R"glsl(
     uniform sampler2D texture_specular1;
     uniform sampler2D texture_normal1;
     uniform int u_wireframe;
+    uniform float u_textcoord;
     
     void main() {
         if (u_wireframe != 0) {
             FragColor = vec4(1, 0, 0, 0);
         }
         else {
-            FragColor = mix(texture(texture_diffuse1, TexCoords), texture(texture_specular1, TexCoords), texture(texture_normal1, TexCoords));
+            vec2 newTexCoords;
+            newTexCoords.x = (TexCoords.x + u_textcoord);
+            newTexCoords.y = (TexCoords.y + u_textcoord);
+            
+            FragColor = mix(texture(texture_diffuse1, newTexCoords), texture(texture_specular1, newTexCoords), texture(texture_normal1, newTexCoords));
         }
     }
 )glsl";

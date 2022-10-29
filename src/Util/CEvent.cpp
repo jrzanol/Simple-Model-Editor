@@ -24,6 +24,11 @@ CEvent::CEvent()
 
 void MouseEvent_Button_Callback(GLFWwindow* window, int button, int action, int mods)
 {
+	const auto& io = ImGui::GetIO();
+
+	if (io.WantCaptureMouse || io.WantCaptureKeyboard)
+		return;
+
 	if (button == GLFW_MOUSE_BUTTON_LEFT)
 	{
 		if (action == GLFW_PRESS)
@@ -38,6 +43,11 @@ void MouseEvent_Button_Callback(GLFWwindow* window, int button, int action, int 
 
 void MouseEvent_Callback(GLFWwindow* window, double xposIn, double yposIn)
 {
+	const auto& io = ImGui::GetIO();
+
+	if (io.WantCaptureMouse || io.WantCaptureKeyboard)
+		return;
+
 	for (const auto& it : *g_EventList)
 		it->ProcessMouseEvent(window, xposIn, yposIn);
 
@@ -64,6 +74,11 @@ void MouseEvent_Callback(GLFWwindow* window, double xposIn, double yposIn)
 
 void MouseEvent_Scroll_Callback(GLFWwindow* window, double xpos, double ypos)
 {
+	const auto& io = ImGui::GetIO();
+
+	if (io.WantCaptureMouse || io.WantCaptureKeyboard)
+		return;
+
 	for (const auto& it : *g_EventList)
 		it->ProcessMouseScroll(window, xpos, ypos);
 }

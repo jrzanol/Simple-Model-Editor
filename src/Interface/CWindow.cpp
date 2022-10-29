@@ -117,6 +117,9 @@ bool CWindow::Render()
     glClearColor(0.25f, 0.25f, 0.25f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // Set Transforms.
+    glUniform1f(glGetUniformLocation(m_ProgramId, "u_textcoord"), CUtil::m_SliderInfo.m_TextCoord);
+
     glm::mat4 projection = glm::perspective(glm::radians(m_Zoom), (float)g_WindowMaxY / (float)g_WindowMaxX, 0.1f, 100.0f);
     glm::mat4 view = GetViewMatrix();
     glm::mat4 model(1.f);
@@ -152,6 +155,8 @@ bool CWindow::Render()
         ImGui::RadioButton("Textura Padrao", &CUtil::m_TextureType, 0);
         ImGui::RadioButton("Textura #02", &CUtil::m_TextureType, 1);
         ImGui::RadioButton("Textura #03", &CUtil::m_TextureType, 2);
+        ImGui::Separator();
+        ImGui::SliderFloat("Mover a Textura", &CUtil::m_SliderInfo.m_TextCoord, 0.f, 2.f);
         ImGui::Separator();
 
         if (ImGui::Button("Save"))

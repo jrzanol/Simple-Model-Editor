@@ -10,14 +10,16 @@ struct SSliderInfo
 	int m_Angle;
 	float m_ScaleX;
 	float m_ScaleY;
+	float m_TextCoord;
 
-	SSliderInfo(float x, float y, int angle, float scalex, float scaley)
+	SSliderInfo(float x, float y, int angle, float scalex, float scaley, float textCoord)
 	{
 		m_X = x;
 		m_Y = y;
 		m_Angle = angle;
 		m_ScaleX = scalex;
 		m_ScaleY = scaley;
+		m_TextCoord = textCoord;
 	}
 };
 
