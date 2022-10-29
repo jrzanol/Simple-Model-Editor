@@ -58,7 +58,7 @@ void CPickItem::ProcessMouseButtonEvent(GLFWwindow* window, int button, int acti
             bool findedSphere = false;
             bool findedTriangle = false;
 
-            if (CUtil::m_EditorType == 0)
+            if (CUtil::m_EditorType == 0 || CUtil::m_EditorType == 2)
             {
                 for (CModel* it : CWindow::GetModels())
                 {
@@ -78,7 +78,34 @@ void CPickItem::ProcessMouseButtonEvent(GLFWwindow* window, int button, int acti
                 }
             }
 
-            if (!findedSphere || CUtil::m_EditorType == 1)
+            if (findedSphere && CUtil::m_EditorType == 2)
+            { // Remove vertices.
+                for (auto& it : g_ClickedObject)
+                {
+                    CMesh* mesh = std::get<0>(it);
+                    Vertex* vertex = std::get<1>(it);
+
+                    const auto itr = std::find(mesh->m_Vertex.begin(), mesh->m_Vertex.end(), *vertex);
+                    int vertexId = std::distance(mesh->m_Vertex.begin(), itr);
+
+                    std::vector<unsigned int> newIndices;
+
+                    for (unsigned int id = 0; id < mesh->m_Indices.size(); id += 3)
+                    {
+                        if (mesh->m_Indices[id] != vertexId && mesh->m_Indices[id + 1] != vertexId && mesh->m_Indices[id + 2] != vertexId)
+                        {
+                            newIndices.push_back(mesh->m_Indices[id]);
+                            newIndices.push_back(mesh->m_Indices[id + 1]);
+                            newIndices.push_back(mesh->m_Indices[id + 2]);
+                        }
+                    }
+
+                    mesh->m_Indices = newIndices;
+                    //mesh->m_Vertex.erase(itr);
+                    mesh->AllocBuffer();
+                }
+            }
+            else if (!findedSphere || CUtil::m_EditorType == 1)
             {
                 glm::vec3 outIntersectionPoint;
                 int minDistOfSurface = 9999999;

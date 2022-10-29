@@ -46,15 +46,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Main</Filter>
     </ClCompile>
-    <ClCompile Include="CCamera.cpp">
-      <Filter>Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="CWindow.cpp">
-      <Filter>Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="CModel.cpp">
-      <Filter>Model</Filter>
-    </ClCompile>
     <ClCompile Include="Model\CMesh.cpp">
       <Filter>Model</Filter>
     </ClCompile>
@@ -70,19 +61,19 @@
     <ClCompile Include="Editor\CPickItem.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
+    <ClCompile Include="Interface\CCamera.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Interface\CWindow.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\CModel.cpp">
+      <Filter>Model</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
       <Filter>Main</Filter>
-    </ClInclude>
-    <ClInclude Include="CCamera.h">
-      <Filter>Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="CWindow.h">
-      <Filter>Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="CModel.h">
-      <Filter>Model</Filter>
     </ClInclude>
     <ClInclude Include="Model\CMesh.h">
       <Filter>Model</Filter>
@@ -98,6 +89,15 @@
     </ClInclude>
     <ClInclude Include="Editor\CPickItem.h">
       <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface\CCamera.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface\CWindow.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\CModel.h">
+      <Filter>Model</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

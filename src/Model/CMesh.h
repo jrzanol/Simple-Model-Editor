@@ -30,6 +30,11 @@ struct Vertex
 		Bitangent.y = 0.f;
 		Bitangent.z = 0.f;
 	}
+
+	inline bool operator==(const Vertex& v)
+	{
+		return this == &v;
+	}
 };
 
 class CMesh

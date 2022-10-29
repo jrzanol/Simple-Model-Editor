@@ -146,12 +146,14 @@ bool CWindow::Render()
         ImGui::SliderFloat("Scale Y", &CUtil::m_SliderInfo.m_ScaleY, -5.f, 5.f);
         ImGui::Separator();
         ImGui::RadioButton("Arrastar Vertices/Triangulos", &CUtil::m_EditorType, 0);
-        ImGui::RadioButton("Criar novo Vertices", &CUtil::m_EditorType, 1);
+        ImGui::RadioButton("Criar Vertices", &CUtil::m_EditorType, 1);
+        ImGui::RadioButton("Remover Vertices", &CUtil::m_EditorType, 2);
         ImGui::Separator();
         ImGui::RadioButton("Textura Padrao", &CUtil::m_TextureType, 0);
         ImGui::RadioButton("Textura #02", &CUtil::m_TextureType, 1);
         ImGui::RadioButton("Textura #03", &CUtil::m_TextureType, 2);
         ImGui::Separator();
+
         if (ImGui::Button("Save"))
         {
             CWindow::SaveModel();

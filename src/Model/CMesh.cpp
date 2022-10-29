@@ -58,9 +58,12 @@ void CMesh::AllocBuffer()
     glBindBuffer(GL_ARRAY_BUFFER, m_VBOId);
     glBufferData(GL_ARRAY_BUFFER, m_Vertex.size() * sizeof(Vertex), &m_Vertex[0], GL_STATIC_DRAW);
 
-    // Set Indices buffer.
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBOId);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_Indices.size() * sizeof(unsigned int), &m_Indices[0], GL_STATIC_DRAW);
+    if (m_Indices.size() > 0)
+    {
+        // Set Indices buffer.
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBOId);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_Indices.size() * sizeof(unsigned int), &m_Indices[0], GL_STATIC_DRAW);
+    }
 
     // Unbind the active buffer.
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -102,6 +105,9 @@ void CMesh::CalculateNormals() {
 
 void CMesh::Draw(GLuint programId) const
 {
+    if (m_Indices.size() == 0)
+        return;
+
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
     unsigned int normalNr = 1;

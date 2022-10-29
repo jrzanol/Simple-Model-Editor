@@ -85,13 +85,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>out\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)3rdparty\glfw-3.3.8.bin.WIN32\include;$(SolutionDir)3rdparty\imgui;$(SolutionDir)3rdparty\imgui\backends;$(SolutionDir)3rdparty\glew-2.2.0\include;$(SolutionDir)3rdparty\glm;$(SolutionDir)3rdparty\assimp\include;$(SolutionDir)src;$(SolutionDir)src\Util;$(SolutionDir)src\Model;$(SolutionDir)3rdparty\stb;$(SolutionDir)3rdparty\assimp\build\Win32\include;$(SolutionDir)src\Editor;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)3rdparty\glfw-3.3.8.bin.WIN32\include;$(SolutionDir)3rdparty\imgui;$(SolutionDir)3rdparty\imgui\backends;$(SolutionDir)3rdparty\glew-2.2.0\include;$(SolutionDir)3rdparty\glm;$(SolutionDir)3rdparty\assimp\include;$(SolutionDir)src;$(SolutionDir)src\Util;$(SolutionDir)src\Model;$(SolutionDir)3rdparty\stb;$(SolutionDir)3rdparty\assimp\build\Win32\include;$(SolutionDir)src\Editor;$(SolutionDir)src\Interface;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)3rdparty\glfw-3.3.8.bin.WIN32\lib-vc2022;$(SolutionDir)3rdparty\glew-2.2.0\lib\Release\Win32;$(SolutionDir)3rdparty\assimp\build\Win32\lib\$(Configuration);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>out\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)3rdparty\glfw-3.3.8.bin.WIN32\include;$(SolutionDir)3rdparty\imgui;$(SolutionDir)3rdparty\imgui\backends;$(SolutionDir)3rdparty\glew-2.2.0\include;$(SolutionDir)3rdparty\glm;$(SolutionDir)3rdparty\assimp\include;$(SolutionDir)src;$(SolutionDir)src\Util;$(SolutionDir)src\Model;$(SolutionDir)3rdparty\stb;$(SolutionDir)3rdparty\assimp\build\Win32\include;$(SolutionDir)src\Editor;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)3rdparty\glfw-3.3.8.bin.WIN32\include;$(SolutionDir)3rdparty\imgui;$(SolutionDir)3rdparty\imgui\backends;$(SolutionDir)3rdparty\glew-2.2.0\include;$(SolutionDir)3rdparty\glm;$(SolutionDir)3rdparty\assimp\include;$(SolutionDir)src;$(SolutionDir)src\Util;$(SolutionDir)src\Model;$(SolutionDir)3rdparty\stb;$(SolutionDir)3rdparty\assimp\build\Win32\include;$(SolutionDir)src\Editor;$(SolutionDir)src\Interface;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)3rdparty\glfw-3.3.8.bin.WIN32\lib-vc2022;$(SolutionDir)3rdparty\glew-2.2.0\lib\Release\Win32;$(SolutionDir)3rdparty\assimp\build\Win32\bin\$(Configuration);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -199,12 +199,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="CCamera.cpp" />
-    <ClCompile Include="CModel.cpp" />
-    <ClCompile Include="CWindow.cpp" />
     <ClCompile Include="Editor\CPickItem.cpp" />
+    <ClCompile Include="Interface\CCamera.cpp" />
+    <ClCompile Include="Interface\CWindow.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Model\CMesh.cpp" />
+    <ClCompile Include="Model\CModel.cpp" />
     <ClCompile Include="Model\CTexture.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -216,11 +216,11 @@
     <ClCompile Include="Util\CUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CCamera.h" />
-    <ClInclude Include="CModel.h" />
-    <ClInclude Include="CWindow.h" />
     <ClInclude Include="Editor\CPickItem.h" />
+    <ClInclude Include="Interface\CCamera.h" />
+    <ClInclude Include="Interface\CWindow.h" />
     <ClInclude Include="Model\CMesh.h" />
+    <ClInclude Include="Model\CModel.h" />
     <ClInclude Include="Model\CTexture.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Util\CEvent.h" />
