@@ -40,20 +40,16 @@ void CPickItem::ProcessMouseButtonEvent(GLFWwindow* window, int button, int acti
     {
         if (action == GLFW_PRESS)
         {
+            if (CUtil::m_EditorType == 1)
+            { // Create Vertices.
+
+            }
+
             double xpos, ypos;
             glfwGetCursorPos(window, &xpos, &ypos);
 
             glm::vec2 fC(xpos, ypos);
             glm::vec2 ndc = ((glm::vec2(fC.x / static_cast<float>(g_WindowMaxX), 1.0 - fC.y / static_cast<float>(g_WindowMaxY)) * 2.0f) - 1.0f);
-            glm::mat4 worldPosition = glm::inverse(CWindow::GetMVP());
-
-            glm::vec4 from = (worldPosition * glm::vec4(ndc, -1.0f, 1.0f));
-            glm::vec4 to = (worldPosition * glm::vec4(ndc, 1.0f, 1.0f));
-
-            from /= from.w; //perspective divide ("normalize" homogeneous coordinates)
-            to /= to.w;
-
-            glm::vec3 direction = (glm::vec3(to) - glm::vec3(from));
 
             bool findedSphere = false;
             bool findedTriangle = false;
@@ -62,6 +58,18 @@ void CPickItem::ProcessMouseButtonEvent(GLFWwindow* window, int button, int acti
             {
                 for (CModel* it : CWindow::GetModels())
                 {
+                    glm::mat4 mvp = (CWindow::GetVP() * it->GetModelPos());
+                    glm::mat4 worldPosition = glm::inverse(mvp);
+
+                    glm::vec4 from = (worldPosition * glm::vec4(ndc, -1.0f, 1.0f));
+                    glm::vec4 to = (worldPosition * glm::vec4(ndc, 1.0f, 1.0f));
+
+                    from /= from.w; //perspective divide ("normalize" homogeneous coordinates)
+                    to /= to.w;
+
+                    glm::vec3 direction = (glm::vec3(to) - glm::vec3(from));
+                    float minDistOfSphere = 9999999.f;
+
                     for (CMesh& mesh : it->m_Meshes)
                     {
                         for (Vertex& v : mesh.m_Vertex)
@@ -70,8 +78,13 @@ void CPickItem::ProcessMouseButtonEvent(GLFWwindow* window, int button, int acti
 
                             if (CUtil::IntersectSphere((glm::vec3(from) - v.Position), direction, 0.10f, t1, t2))
                             {
-                                g_ClickedObject.push_back(std::make_tuple(&mesh, &v));
-                                findedSphere = true;
+                                if (t1 < minDistOfSphere)
+                                {
+                                    g_ClickedObject.push_back(std::make_tuple(&mesh, &v));
+
+                                    findedSphere = true;
+                                    minDistOfSphere = t1;
+                                }
                             }
                         }
                     }
@@ -115,6 +128,17 @@ void CPickItem::ProcessMouseButtonEvent(GLFWwindow* window, int button, int acti
 
                 for (CModel* it : CWindow::GetModels())
                 {
+                    glm::mat4 mvp = (CWindow::GetVP() * it->GetModelPos());
+                    glm::mat4 worldPosition = glm::inverse(mvp);
+
+                    glm::vec4 from = (worldPosition * glm::vec4(ndc, -1.0f, 1.0f));
+                    glm::vec4 to = (worldPosition * glm::vec4(ndc, 1.0f, 1.0f));
+
+                    from /= from.w; //perspective divide ("normalize" homogeneous coordinates)
+                    to /= to.w;
+
+                    glm::vec3 direction = (glm::vec3(to) - glm::vec3(from));
+
                     for (CMesh& itmesh : it->m_Meshes)
                     {
                         for (unsigned int id = 0; id < itmesh.m_Indices.size(); id += 3)
@@ -212,5 +236,125 @@ void CPickItem::ProcessMouseButtonEvent(GLFWwindow* window, int button, int acti
         {
         }
     }
+}
+
+bool CPickItem::IntersectSphere(stIntersect& out, bool onlySelected)
+{
+    bool finded = false;
+
+    double xpos, ypos;
+    glfwGetCursorPos(g_Window, &xpos, &ypos);
+
+    glm::vec2 fC(xpos, ypos);
+    glm::vec2 ndc = ((glm::vec2(fC.x / static_cast<float>(g_WindowMaxX), 1.0 - fC.y / static_cast<float>(g_WindowMaxY)) * 2.0f) - 1.0f);
+
+    for (CModel* it : CWindow::GetModels())
+    {
+        if (onlySelected)
+            it = CModel::g_SelectedModel;
+
+        glm::mat4 mvp = (CWindow::GetVP() * it->GetModelPos());
+        glm::mat4 worldPosition = glm::inverse(mvp);
+
+        glm::vec4 from = (worldPosition * glm::vec4(ndc, -1.0f, 1.0f));
+        glm::vec4 to = (worldPosition * glm::vec4(ndc, 1.0f, 1.0f));
+
+        from /= from.w; //perspective divide ("normalize" homogeneous coordinates)
+        to /= to.w;
+
+        glm::vec3 direction = (glm::vec3(to) - glm::vec3(from));
+        float minDistOfSphere = 9999999.f;
+
+        for (CMesh& mesh : it->m_Meshes)
+        {
+            for (Vertex& v : mesh.m_Vertex)
+            {
+                float t1, t2;
+
+                if (CUtil::IntersectSphere((glm::vec3(from) - v.Position), direction, 0.10f, t1, t2))
+                {
+                    if (t1 < minDistOfSphere)
+                    {
+                        out.m_Model = it;
+                        out.m_Mesh = &mesh;
+                        out.m_Vertex = &v;
+                        out.m_Indices = NULL;
+
+                        finded = true;
+                        minDistOfSphere = t1;
+                    }
+                }
+            }
+        }
+
+        if (onlySelected)
+            break;
+    }
+
+    return finded;
+}
+
+bool CPickItem::IntersectSurface(stIntersect& out, bool onlySelected)
+{
+    bool finded = false;
+
+    double xpos, ypos;
+    glfwGetCursorPos(g_Window, &xpos, &ypos);
+
+    glm::vec2 fC(xpos, ypos);
+    glm::vec2 ndc = ((glm::vec2(fC.x / static_cast<float>(g_WindowMaxX), 1.0 - fC.y / static_cast<float>(g_WindowMaxY)) * 2.0f) - 1.0f);
+
+    glm::vec3 outIntersectionPoint;
+    int minDistOfSurface = 9999999;
+
+    for (CModel* it : CWindow::GetModels())
+    {
+        if (onlySelected)
+            it = CModel::g_SelectedModel;
+
+        glm::mat4 mvp = (CWindow::GetVP() * it->GetModelPos());
+        glm::mat4 worldPosition = glm::inverse(mvp);
+
+        glm::vec4 from = (worldPosition * glm::vec4(ndc, -1.0f, 1.0f));
+        glm::vec4 to = (worldPosition * glm::vec4(ndc, 1.0f, 1.0f));
+
+        from /= from.w; //perspective divide ("normalize" homogeneous coordinates)
+        to /= to.w;
+
+        glm::vec3 direction = (glm::vec3(to) - glm::vec3(from));
+
+        for (CMesh& itmesh : it->m_Meshes)
+        {
+            for (unsigned int id = 0; id < itmesh.m_Indices.size(); id += 3)
+            {
+                glm::vec3 triangule[3];
+                triangule[0] = itmesh.m_Vertex[itmesh.m_Indices[id]].Position;
+                triangule[1] = itmesh.m_Vertex[itmesh.m_Indices[id + 1]].Position;
+                triangule[2] = itmesh.m_Vertex[itmesh.m_Indices[id + 2]].Position;
+
+                if (CUtil::RayIntersectsTriangle(glm::vec3(from), glm::vec3(to), triangule, outIntersectionPoint))
+                {
+                    glm::vec3 diff = (glm::vec3(from) - outIntersectionPoint);
+
+                    int dist = (int)sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+                    if (dist < minDistOfSurface)
+                    {
+                        out.m_Model = it;
+                        out.m_Mesh = &itmesh;
+                        out.m_Vertex = NULL;
+                        out.m_Indices = &itmesh.m_Indices[id];
+
+                        finded = true;
+                        minDistOfSurface = dist;
+                    }
+                }
+            }
+        }
+
+        if (onlySelected)
+            break;
+    }
+
+    return finded;
 }
 

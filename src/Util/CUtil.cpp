@@ -60,11 +60,15 @@ const char* CUtil::m_FragmentShader = R"glsl(
     uniform sampler2D texture_specular1;
     uniform sampler2D texture_normal1;
     uniform int u_wireframe;
+    uniform int u_wireframeColor;
     uniform float u_textcoord;
     
     void main() {
         if (u_wireframe != 0) {
-            FragColor = vec4(1, 0, 0, 0);
+            if (u_wireframeColor == 0)
+                FragColor = vec4(1, 0, 0, 0);
+            else
+                FragColor = vec4(0, 0, 1, 0);
         }
         else {
             vec2 newTexCoords;
@@ -90,6 +94,7 @@ const char* CUtil::m_PickingFragmentShader = R"glsl(
     }
 )glsl";
 
+//https://stackoverflow.com/questions/20140711/picking-in-3d-with-ray-tracing-using-ninevehgl-or-opengl-i-phone
 //ray at position p with direction d intersects sphere at (0,0,0) with radius r. returns intersection times along ray t1 and t2
 bool CUtil::IntersectSphere(const glm::vec3& p, const glm::vec3& d, float r, float& t1, float& t2)
 {

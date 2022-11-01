@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "CWindow.h"
 
-glm::mat4 CWindow::m_MVP;
+glm::mat4 CWindow::m_VP;
 std::list<CModel*> CWindow::m_DrawModel;
 
 CWindow::CWindow() : CCamera()
@@ -18,7 +18,7 @@ CWindow::~CWindow()
 {
 }
 
-const glm::mat4& CWindow::GetMVP() { return m_MVP; }
+const glm::mat4& CWindow::GetVP() { return m_VP; }
 const std::list<CModel*>& CWindow::GetModels() { return m_DrawModel; }
 
 bool CWindow::Initialize()
@@ -89,7 +89,7 @@ bool CWindow::Initialize()
     std::cout << "Carregando os modelos...\n";
 
     // Load Models.
-    m_DrawModel.push_back(CModel::LoadModel("Model/main_out.obj"));
+    CreateModel("Model/main.obj");
 
     // Configure the Lines.
     glLineWidth(2.f);
@@ -122,18 +122,12 @@ bool CWindow::Render()
 
     glm::mat4 projection = glm::perspective(glm::radians(m_Zoom), (float)g_WindowMaxY / (float)g_WindowMaxX, 0.1f, 100.0f);
     glm::mat4 view = GetViewMatrix();
-    glm::mat4 model(1.f);
 
-    model = glm::translate(model, glm::vec3(CUtil::m_SliderInfo.m_X, CUtil::m_SliderInfo.m_Y, 0.f));
-    model = glm::scale(model, glm::vec3(CUtil::m_SliderInfo.m_ScaleX, CUtil::m_SliderInfo.m_ScaleY, 1.f));
-    model = glm::rotate(model, glm::radians((float)CUtil::m_SliderInfo.m_Angle), glm::vec3(0.0f, 0.0f, 1.0f));
-
-    m_MVP = (projection * view * model);
-    glUniformMatrix4fv(glGetUniformLocation(m_ProgramId, "u_mvp"), 1, GL_FALSE, glm::value_ptr(m_MVP));
+    m_VP = (projection * view);
 
     // Draw objects.
     for (const auto& it : m_DrawModel)
-        it->Draw(m_ProgramId);
+        it->Draw(m_ProgramId, m_VP);
 
     // Start the Dear ImGui frame.
     ImGui_ImplOpenGL3_NewFrame();
@@ -158,7 +152,6 @@ bool CWindow::Render()
         ImGui::Separator();
         ImGui::SliderFloat("Mover a Textura", &CUtil::m_SliderInfo.m_TextCoord, 0.f, 2.f);
         ImGui::Separator();
-
         if (ImGui::Button("Save"))
         {
             CWindow::SaveModel();
@@ -166,6 +159,9 @@ bool CWindow::Render()
             ImGui::SameLine();
             ImGui::Text("Salvo!");
         }
+        ImGui::Separator();
+        if (ImGui::Button("Criar Modelo #1"))
+            CreateModel("Model/main.obj");
     ImGui::End();
 
     // Rendering the ImGui.
@@ -183,6 +179,16 @@ bool CWindow::Render()
         it->ProcessInput(g_Window);
 
     return glfwWindowShouldClose(g_Window);
+}
+
+void CWindow::CreateModel(const char* fileModel)
+{
+    static int s_ModelCounter = 0;
+
+    CModel* m = CModel::LoadModel(fileModel);
+    m->m_Position = glm::vec3(0.f, 0.f, -5.f * s_ModelCounter++);
+
+    m_DrawModel.push_back(m);
 }
 
 void CWindow::SaveModel()

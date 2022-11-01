@@ -9,26 +9,41 @@
 int CModel::g_ListCounter = 0;
 CModel CModel::g_List[MAX_OBJECT];
 
+CModel* CModel::g_SelectedModel = NULL;
+
 CModel::CModel()
 {
+    m_Position = glm::vec3(0.f, 0.f, 0.f);
 }
 
-void CModel::Draw(GLuint programId) const
+void CModel::Draw(GLuint programId, const glm::mat4& vp) const
 {
+    if (g_SelectedModel == this)
+        glUniform1i(glGetUniformLocation(programId, "u_wireframeColor"), 1);
+    else
+        glUniform1i(glGetUniformLocation(programId, "u_wireframeColor"), 0);
+
+    glm::mat4 model = (vp * GetModelPos());
+    glUniformMatrix4fv(glGetUniformLocation(programId, "u_mvp"), 1, GL_FALSE, glm::value_ptr(model));
+
     for (const auto& it : m_Meshes)
         it.Draw(programId);
 }
 
+glm::mat4& CModel::GetModelPos() const
+{
+    static glm::mat4 model;
+
+    model = glm::mat4(1.f);
+    model = glm::translate(model, m_Position);
+    model = glm::scale(model, glm::vec3(CUtil::m_SliderInfo.m_ScaleX, CUtil::m_SliderInfo.m_ScaleY, 1.f));
+    model = glm::rotate(model, glm::radians((float)CUtil::m_SliderInfo.m_Angle), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    return model;
+}
+
 CModel* CModel::LoadModel(std::string file)
 {
-    for (auto& it : g_List)
-    {
-        if (it.m_ObjName == file)
-        { // Load .obj file.
-            return &it;
-        }
-    }
-
     if (g_ListCounter >= MAX_OBJECT)
         return NULL;
 
@@ -47,15 +62,8 @@ CModel* CModel::LoadModel(std::string file)
     // process ASSIMP's root node recursively
     obj->ProcessModelNode(scene->mRootNode, scene);
 
-    //for (unsigned int i = 0; i < ro.m_VertexIds.size(); i++)
-    //{
-    //	Vertex vertex;
-    //    vertex.Position = ro.m_Vertices[ro.m_VertexIds[i] - 1];
-    //    vertex.Normal = ro.m_Normals[ro.m_NormalIndices[i] - 1];
-    //    vertex.TexCoords = ro.m_UVs[ro.m_UVIndices[i] - 1];
-
-    //    obj->m_Vertex.push_back(vertex);
-    //}
+    if (g_SelectedModel == NULL)
+        g_SelectedModel = obj;
 
     g_ListCounter++;
     return obj;

@@ -15,6 +15,16 @@ public:
 	static std::vector<std::tuple<CMesh*, Vertex*>> g_ClickedObject;
 
 private:
-	
+	struct stIntersect
+	{
+		CModel* m_Model;
+		CMesh* m_Mesh;
+
+		Vertex* m_Vertex;
+		unsigned int* m_Indices;
+	};
+
+	bool IntersectSphere(stIntersect&, bool = true);
+	bool IntersectSurface(stIntersect&, bool = true);
 };
 

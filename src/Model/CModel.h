@@ -12,13 +12,17 @@ class CModel
 public:
 	CModel();
 
-	void Draw(GLuint) const;
+	void Draw(GLuint, const glm::mat4&) const;
+	glm::mat4& GetModelPos() const;
 
 	std::string m_ObjName;
 	std::vector<CMesh> m_Meshes;
+	glm::vec3 m_Position;
 
 	// Load File or Find Object.
 	static CModel* LoadModel(std::string);
+
+	static CModel* g_SelectedModel;
 
 private:
 	void ProcessModelNode(aiNode*, const aiScene*);

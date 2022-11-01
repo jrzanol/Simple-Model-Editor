@@ -17,7 +17,7 @@ public:
 	void Cleanup();
 	bool Render();
 
-	static const glm::mat4& GetMVP();
+	static const glm::mat4& GetVP();
 	static const std::list<CModel*>& GetModels();
 
 private:
@@ -27,9 +27,10 @@ private:
 	GLuint CompileShader(const char*, GLenum);
 	GLuint LinkProgram(GLuint, GLuint);
 
-	static glm::mat4 m_MVP;
+	static glm::mat4 m_VP;
 	static std::list<CModel*> m_DrawModel;
 
+	static void CreateModel(const char*);
 	static void SaveModel();
 };
 
