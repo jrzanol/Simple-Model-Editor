@@ -7,7 +7,7 @@
 glm::mat4 CWindow::m_VP;
 std::list<CModel*> CWindow::m_DrawModel;
 
-CWindow::CWindow() : CCamera()
+CWindow::CWindow()
 {
     g_Window = NULL;
     m_ProgramId = 0;
@@ -74,14 +74,11 @@ bool CWindow::Initialize()
     /* Compile and Link Shaders */
     std::cout << "Compilando o Vertex Shader...\n";
     GLuint vShaderId = CompileShader(CUtil::m_VertexShader, GL_VERTEX_SHADER);
-    GLuint vPickShaderId = CompileShader(CUtil::m_PickingVertexShader, GL_VERTEX_SHADER);
 
     std::cout << "Compilando o Fragment Shader...\n";
     GLuint fShaderId = CompileShader(CUtil::m_FragmentShader, GL_FRAGMENT_SHADER);
-    GLuint fPickShaderId = CompileShader(CUtil::m_PickingFragmentShader, GL_FRAGMENT_SHADER);
 
     m_ProgramId = LinkProgram(vShaderId, fShaderId);
-    m_PickingProgramId = LinkProgram(vPickShaderId, fPickShaderId);
 
     // Use Shaders.
     glUseProgram(m_ProgramId);
@@ -89,7 +86,7 @@ bool CWindow::Initialize()
     std::cout << "Carregando os modelos...\n";
 
     // Load Models.
-    CreateModel("Model/main.obj");
+    CreateModel(0, "Model/main.obj");
 
     // Configure the Lines.
     glLineWidth(2.f);
@@ -118,13 +115,16 @@ bool CWindow::Render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Set Transforms.
-    glUniform1f(glGetUniformLocation(m_ProgramId, "u_textcoord"), CUtil::m_SliderInfo.m_TextCoord);
-
-    glm::mat4 projection = glm::perspective(glm::radians(m_Zoom), (float)g_WindowMaxY / (float)g_WindowMaxX, 0.1f, 100.0f);
-    glm::mat4 view = GetViewMatrix();
+    glm::mat4 projection = glm::perspective(glm::radians(m_Camera[CCamera::m_CameraId].m_Zoom), (float)g_WindowMaxY / (float)g_WindowMaxX, 0.1f, 100.0f);
+    glm::mat4 view = m_Camera[CCamera::m_CameraId].GetViewMatrix();
 
     m_VP = (projection * view);
+    glUniformMatrix4fv(glGetUniformLocation(m_ProgramId, "u_vp"), 1, GL_FALSE, glm::value_ptr(m_VP));
 
+    // Lights.
+    static glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
+    glUniform3fv(glGetUniformLocation(m_ProgramId, "lightPos"), 1, glm::value_ptr(lightPos));
+    
     // Draw objects.
     for (const auto& it : m_DrawModel)
         it->Draw(m_ProgramId, m_VP);
@@ -136,21 +136,20 @@ bool CWindow::Render()
 
     // Create ImGui Sliders.
     ImGui::Begin("Infos:");
-        ImGui::SliderFloat("X", &CUtil::m_SliderInfo.m_X, -2.f, 2.f);
-        ImGui::SliderFloat("Y", &CUtil::m_SliderInfo.m_Y, -2.f, 2.f);
-        ImGui::SliderInt("Angle", &CUtil::m_SliderInfo.m_Angle, 0, 360);
-        ImGui::SliderFloat("Scale X", &CUtil::m_SliderInfo.m_ScaleX, -5.f, 5.f);
-        ImGui::SliderFloat("Scale Y", &CUtil::m_SliderInfo.m_ScaleY, -5.f, 5.f);
-        ImGui::Separator();
         ImGui::RadioButton("Arrastar Vertices/Triangulos", &CUtil::m_EditorType, 0);
         ImGui::RadioButton("Criar Vertices", &CUtil::m_EditorType, 1);
         ImGui::RadioButton("Remover Vertices", &CUtil::m_EditorType, 2);
+        ImGui::RadioButton("Mover Objetos", &CUtil::m_EditorType, 3);
         ImGui::Separator();
-        ImGui::RadioButton("Textura Padrao", &CUtil::m_TextureType, 0);
-        ImGui::RadioButton("Textura #02", &CUtil::m_TextureType, 1);
-        ImGui::RadioButton("Textura #03", &CUtil::m_TextureType, 2);
+        ImGui::RadioButton("Textura Padrao", &CModel::g_SelectedModel->m_SelectedTexture, 0);
+        ImGui::RadioButton("Textura #02", &CModel::g_SelectedModel->m_SelectedTexture, 1);
+        ImGui::RadioButton("Textura #03", &CModel::g_SelectedModel->m_SelectedTexture, 2);
         ImGui::Separator();
-        ImGui::SliderFloat("Mover a Textura", &CUtil::m_SliderInfo.m_TextCoord, 0.f, 2.f);
+        ImGui::RadioButton("Camera Padrao", &CCamera::m_CameraId, 0);
+        ImGui::RadioButton("Camera #02", &CCamera::m_CameraId, 1);
+        ImGui::RadioButton("Camera #03", &CCamera::m_CameraId, 2);
+        ImGui::Separator();
+        ImGui::SliderFloat("Mover a Textura", &CModel::g_SelectedModel->m_TextCoord, 0.f, 2.f);
         ImGui::Separator();
         if (ImGui::Button("Save"))
         {
@@ -161,7 +160,11 @@ bool CWindow::Render()
         }
         ImGui::Separator();
         if (ImGui::Button("Criar Modelo #1"))
-            CreateModel("Model/main.obj");
+            CreateModel(0, "Model/main.obj");
+        if (ImGui::Button("Criar Modelo #2"))
+            CreateModel(1, "Model2/main.obj", "Model2");
+        if (ImGui::Button("Criar Modelo #3"))
+            CreateModel(2, "Model3/main.obj", "Model3");
     ImGui::End();
 
     // Rendering the ImGui.
@@ -181,12 +184,25 @@ bool CWindow::Render()
     return glfwWindowShouldClose(g_Window);
 }
 
-void CWindow::CreateModel(const char* fileModel)
+void CWindow::CreateModel(int type, const char* fileModel, const char* dir)
 {
     static int s_ModelCounter = 0;
 
+    strcpy(CUtil::g_Directory, dir);
+
     CModel* m = CModel::LoadModel(fileModel);
     m->m_Position = glm::vec3(0.f, 0.f, -5.f * s_ModelCounter++);
+
+    if (type == 1)
+    {
+        m->m_Position.y = -1.f;
+        m->m_Scale = glm::vec3(5.f, 5.f, 5.f);
+    }
+    else if (type == 2)
+    {
+        m->m_Position.y = 0.75f;
+        m->m_Scale = glm::vec3(0.5f, 0.5f, 0.5f);
+    }
 
     m_DrawModel.push_back(m);
 }

@@ -19,6 +19,7 @@ CEvent::CEvent()
 	if (g_EventList == NULL)
 		g_EventList = new std::vector<CEvent*>();
 
+	m_Priority = 0;
 	g_EventList->push_back(this);
 }
 

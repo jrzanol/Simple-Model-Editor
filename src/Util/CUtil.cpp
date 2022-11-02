@@ -9,10 +9,8 @@ GLFWwindow* g_Window = NULL;
 float g_DeltaTime = 0;
 float g_LastTime = 0;
 
-SSliderInfo CUtil::m_SliderInfo(0.f, 0.f, 0, 1.f, 1.f, 0.f);
-
 int CUtil::m_EditorType = 1;
-int CUtil::m_TextureType = 0;
+char CUtil::g_Directory[32];
 
 const char* CUtil::m_VertexShader = R"glsl(
     #version 430
@@ -24,29 +22,18 @@ const char* CUtil::m_VertexShader = R"glsl(
     layout(location = 4) in vec3 a_bitangent;
     
     out vec2 TexCoords;
-
-    uniform mat4 u_mvp;
-
+    out vec3 FragPos;  
+    out vec3 Normal;
+    
+    uniform mat4 u_model;
+    uniform mat4 u_vp;
+    
     void main() {
         TexCoords = a_texcoords;
+        FragPos = vec3(u_model * vec4(a_position, 1.0));
+        Normal = a_normals;
 
-        gl_Position = u_mvp * vec4(a_position, 1.0);
-    }
-)glsl";
-
-const char* CUtil::m_PickingVertexShader = R"glsl(
-    #version 430
-
-    layout(location = 0) in vec3 a_position;
-    
-    out vec2 TexCoords;
-
-    uniform mat4 u_view;
-    uniform mat4 u_proj;
-    uniform mat4 u_model;
-
-    void main() {
-        gl_Position = u_proj * u_view * u_model * vec4(a_position, 1.0);
+        gl_Position = (u_vp * u_model * vec4(a_position, 1.0));
     }
 )glsl";
 
@@ -55,13 +42,16 @@ const char* CUtil::m_FragmentShader = R"glsl(
     
     out vec4 FragColor;
     in vec2 TexCoords;
-    
+    in vec3 FragPos;
+    in vec3 Normal;
+
     uniform sampler2D texture_diffuse1;
     uniform sampler2D texture_specular1;
     uniform sampler2D texture_normal1;
     uniform int u_wireframe;
     uniform int u_wireframeColor;
     uniform float u_textcoord;
+    uniform vec3 lightPos;
     
     void main() {
         if (u_wireframe != 0) {
@@ -71,26 +61,22 @@ const char* CUtil::m_FragmentShader = R"glsl(
                 FragColor = vec4(0, 0, 1, 0);
         }
         else {
+            // Object Color:
             vec2 newTexCoords;
             newTexCoords.x = (TexCoords.x + u_textcoord);
             newTexCoords.y = (TexCoords.y + u_textcoord);
             
-            FragColor = mix(texture(texture_diffuse1, newTexCoords), texture(texture_specular1, newTexCoords), texture(texture_normal1, newTexCoords));
+            vec4 objectColor = mix(texture(texture_diffuse1, newTexCoords), texture(texture_specular1, newTexCoords), texture(texture_normal1, newTexCoords));
+            
+            // Light:
+            vec3 norm = normalize(Normal);
+            vec3 lightDir = normalize(lightPos - FragPos);
+            float diff = max(dot(norm, lightDir), 0.0);
+            vec3 diffuse = diff * vec3(1, 1, 1);
+            
+            // Ambient Color:
+            FragColor = vec4(diffuse, 1) * objectColor;
         }
-    }
-)glsl";
-
-const char* CUtil::m_PickingFragmentShader = R"glsl(
-    #version 430
-
-    // Ouput data
-    out vec4 color;
-
-    // Values that stay constant for the whole mesh.
-    uniform vec4 PickingColor;
-
-    void main() {
-	    color = PickingColor;
     }
 )glsl";
 

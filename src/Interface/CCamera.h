@@ -17,7 +17,8 @@ public:
 	void ProcessMouseDragEvent(GLFWwindow*, float, float);
 	void ProcessMouseScroll(GLFWwindow*, double, double);
 
-protected:
+	static int m_CameraId;
+
 	// Returns the view matrix calculated using Euler Angles and the LookAt Matrix.
 	glm::mat4 GetViewMatrix();
 

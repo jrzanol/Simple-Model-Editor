@@ -18,6 +18,8 @@ public:
 	virtual void ProcessMouseDragEvent(GLFWwindow*, float, float) { }
 	virtual void ProcessMouseScroll(GLFWwindow*, double, double) { }
 
+	int m_Priority;
+
 	static void Initialize();
 };
 

@@ -8,14 +8,37 @@
 #include "CCamera.h"
 #include "CPickItem.h"
 
+int CCamera::m_CameraId = 0;
+
 CCamera::CCamera()
 {
-    m_Position = glm::vec3(0.0f, 3.f, 7.f);
-    m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    m_Yaw = YAW;
-    m_Pitch = PITCH;
-    m_Zoom = 45.f;
+    static int si_CameraCounter = 0;
+    if (si_CameraCounter == 0)
+    {
+        m_Position = glm::vec3(0.0f, 3.f, 12.f);
+        m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+        m_Yaw = YAW;
+        m_Pitch = PITCH;
+        m_Zoom = 45.f;
+    }
+    else if (si_CameraCounter == 1)
+    {
+        m_Position = glm::vec3(4.44f, 31.67f, 43.79f);
+        m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+        m_Yaw = -83.10f;
+        m_Pitch = -29.50f;
+        m_Zoom = 45.f;
+    }
+    else if (si_CameraCounter == 2)
+    {
+        m_Position = glm::vec3(13.48f, 5.53f, 17.32f);
+        m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+        m_Yaw = -115.3f;
+        m_Pitch = -1.8f;
+        m_Zoom = 45.f;
+    }
 
+    si_CameraCounter++;
     UpdateCameraVectors();
 }
 
@@ -61,6 +84,8 @@ void CCamera::ProcessMouseDragEvent(GLFWwindow* window, float xoffset, float yof
 
     // update Front, Right and Up Vectors using the updated Euler angles
     UpdateCameraVectors();
+
+    //printf("Pos %.2f,%.2f,%.2f WorldUp %.2f,%.2f,%.2f Yan %.2f Pitch %.2f Zoom %.2f\n", m_Position.x, m_Position.y, m_Position.z, m_WorldUp.x, m_WorldUp.y, m_WorldUp.z, m_Yaw, m_Pitch, m_Zoom);
 }
 
 void CCamera::ProcessMouseScroll(GLFWwindow* window, double _xoffset, double _yoffset)

@@ -80,8 +80,8 @@ void CMesh::CalculateNormals() {
     // to the corresponding vertices of the face
     for (unsigned int i = 0; i < m_Indices.size(); i += 3) {
         glm::vec3 A = m_Vertex[m_Indices[i]].Position;
-        glm::vec3 B = m_Vertex[m_Indices[i + 1LL]].Position;
-        glm::vec3 C = m_Vertex[m_Indices[i + 2LL]].Position;
+        glm::vec3 B = m_Vertex[m_Indices[i + 1]].Position;
+        glm::vec3 C = m_Vertex[m_Indices[i + 2]].Position;
 
         auto computeFaceNormal = [](glm::vec3 p1, glm::vec3 p2, glm::vec3 p3) {
             // Uses p2 as a new origin for p1,p3
@@ -94,8 +94,8 @@ void CMesh::CalculateNormals() {
         glm::vec3 normal = computeFaceNormal(A, B, C);
 
         m_Vertex[m_Indices[i]].Normal += normal;
-        m_Vertex[m_Indices[i + 1LL]].Normal += normal;
-        m_Vertex[m_Indices[i + 2LL]].Normal += normal;
+        m_Vertex[m_Indices[i + 1]].Normal += normal;
+        m_Vertex[m_Indices[i + 2]].Normal += normal;
     }
 
     // Normalize each normal
@@ -108,33 +108,36 @@ void CMesh::Draw(GLuint programId) const
     if (m_Indices.size() == 0)
         return;
 
-    unsigned int diffuseNr = 1;
-    unsigned int specularNr = 1;
-    unsigned int normalNr = 1;
-    unsigned int heightNr = 1;
-
-    unsigned int i = CUtil::m_TextureType;
+    if (m_Textures.size() > 0)
     {
-        // Ativa a Textura atual a ser renderizada.
-        glActiveTexture(GL_TEXTURE0 + i);
+        unsigned int diffuseNr = 1;
+        unsigned int specularNr = 1;
+        unsigned int normalNr = 1;
+        unsigned int heightNr = 1;
 
-        std::string number;
-        std::string name = m_Textures[i].m_Type;
+        for (size_t i = 0; i < m_Textures.size(); ++i)
+        {
+            // Ativa a Textura atual a ser renderizada.
+            glActiveTexture(GL_TEXTURE0 + i);
 
-        if (name == "texture_diffuse")
-            number = std::to_string(diffuseNr++);
-        else if (name == "texture_specular")
-            number = std::to_string(specularNr++);
-        else if (name == "texture_normal")
-            number = std::to_string(normalNr++);
-        else if (name == "texture_height")
-            number = std::to_string(heightNr++);
+            std::string number;
+            std::string name = m_Textures[i].m_Type;
 
-        // now set the sampler to the correct texture unit
-        glUniform1i(glGetUniformLocation(programId, (name + number).c_str()), i);
+            if (name == "texture_diffuse")
+                number = std::to_string(diffuseNr++);
+            else if (name == "texture_specular")
+                number = std::to_string(specularNr++);
+            else if (name == "texture_normal")
+                number = std::to_string(normalNr++);
+            else if (name == "texture_height")
+                number = std::to_string(heightNr++);
 
-        // and finally bind the texture
-        glBindTexture(GL_TEXTURE_2D, m_Textures[i].m_Id);
+            // now set the sampler to the correct texture unit
+            glUniform1i(glGetUniformLocation(programId, (name + number).c_str()), i);
+
+            // and finally bind the texture
+            glBindTexture(GL_TEXTURE_2D, m_Textures[i].m_Id);
+        }
     }
 
     // Bind buffer vector of object.

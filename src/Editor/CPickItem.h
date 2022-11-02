@@ -12,9 +12,9 @@ public:
 	void ProcessMouseDragEvent(GLFWwindow*, float, float);
 	void ProcessMouseButtonEvent(GLFWwindow*, int, int, int);
 
-	static std::vector<std::tuple<CMesh*, Vertex*>> g_ClickedObject;
-
 private:
+	int m_LastEditorType;
+
 	struct stIntersect
 	{
 		CModel* m_Model;
@@ -24,7 +24,12 @@ private:
 		unsigned int* m_Indices;
 	};
 
+	void CreateVertice(stIntersect&);
+
 	bool IntersectSphere(stIntersect&, bool = true);
 	bool IntersectSurface(stIntersect&, bool = true);
+
+public:
+	static std::vector<stIntersect> g_ClickedObject;
 };
 

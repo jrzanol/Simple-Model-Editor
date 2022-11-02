@@ -18,7 +18,7 @@ std::vector<Texture> CTexture::LoadMaterialTextures(aiMaterial* mat, aiTextureTy
             g_List[i].m_Id = -1;
 
         // tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
-        stbi_set_flip_vertically_on_load(true);
+        //stbi_set_flip_vertically_on_load(true);
 
         g_Initialized = true;
     }
@@ -34,10 +34,12 @@ std::vector<Texture> CTexture::LoadMaterialTextures(aiMaterial* mat, aiTextureTy
 
             if (i < maxTex)
                 mat->GetTexture(type, i, &str);
-            else if (i == maxTex)
-                str = aiString("crate_2.jpg");
-            else if (i == maxTex + 1)
-                str = aiString("crate_3.jpg");
+            else
+                continue;
+            //else if (i == maxTex)
+            //    str = aiString("crate_2.jpg");
+            //else if (i == maxTex + 1)
+            //    str = aiString("crate_3.jpg");
 
             // check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
             bool skip = false;

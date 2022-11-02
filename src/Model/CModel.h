@@ -18,6 +18,11 @@ public:
 	std::string m_ObjName;
 	std::vector<CMesh> m_Meshes;
 	glm::vec3 m_Position;
+	glm::vec3 m_Scale;
+	float m_Angle;
+
+	float m_TextCoord;
+	int m_SelectedTexture;
 
 	// Load File or Find Object.
 	static CModel* LoadModel(std::string);

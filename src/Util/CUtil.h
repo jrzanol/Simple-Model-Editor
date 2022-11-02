@@ -3,39 +3,14 @@
 
 #pragma once
 
-struct SSliderInfo
-{
-	float m_X;
-	float m_Y;
-	int m_Angle;
-	float m_ScaleX;
-	float m_ScaleY;
-	float m_TextCoord;
-
-	SSliderInfo(float x, float y, int angle, float scalex, float scaley, float textCoord)
-	{
-		m_X = x;
-		m_Y = y;
-		m_Angle = angle;
-		m_ScaleX = scalex;
-		m_ScaleY = scaley;
-		m_TextCoord = textCoord;
-	}
-};
-
 class CUtil
 {
 public:
-	static SSliderInfo m_SliderInfo;
-
 	static int m_EditorType;
-	static int m_TextureType;
+	static char g_Directory[32];
 
 	static const char* m_VertexShader;
-	static const char* m_PickingVertexShader;
-
 	static const char* m_FragmentShader;
-	static const char* m_PickingFragmentShader;
 
 	static bool IntersectSphere(const glm::vec3&, const glm::vec3&, float, float&, float&);
 	static bool RayIntersectsTriangle(glm::vec3, glm::vec3, glm::vec3*, glm::vec3&);

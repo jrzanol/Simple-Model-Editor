@@ -14,6 +14,11 @@ CModel* CModel::g_SelectedModel = NULL;
 CModel::CModel()
 {
     m_Position = glm::vec3(0.f, 0.f, 0.f);
+    m_Scale = glm::vec3(1.f, 1.f, 1.f);
+    m_Angle = 0.f;
+
+    m_TextCoord = 0.f;
+    m_SelectedTexture = 0;
 }
 
 void CModel::Draw(GLuint programId, const glm::mat4& vp) const
@@ -23,8 +28,10 @@ void CModel::Draw(GLuint programId, const glm::mat4& vp) const
     else
         glUniform1i(glGetUniformLocation(programId, "u_wireframeColor"), 0);
 
-    glm::mat4 model = (vp * GetModelPos());
-    glUniformMatrix4fv(glGetUniformLocation(programId, "u_mvp"), 1, GL_FALSE, glm::value_ptr(model));
+    glUniform1f(glGetUniformLocation(programId, "u_textcoord"), m_TextCoord);
+
+    glm::mat4 model = GetModelPos();
+    glUniformMatrix4fv(glGetUniformLocation(programId, "u_model"), 1, GL_FALSE, glm::value_ptr(model));
 
     for (const auto& it : m_Meshes)
         it.Draw(programId);
@@ -36,8 +43,8 @@ glm::mat4& CModel::GetModelPos() const
 
     model = glm::mat4(1.f);
     model = glm::translate(model, m_Position);
-    model = glm::scale(model, glm::vec3(CUtil::m_SliderInfo.m_ScaleX, CUtil::m_SliderInfo.m_ScaleY, 1.f));
-    model = glm::rotate(model, glm::radians((float)CUtil::m_SliderInfo.m_Angle), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::scale(model, m_Scale);
+    model = glm::rotate(model, glm::radians(m_Angle), glm::vec3(1.0f, 0.0f, 0.0f));
 
     return model;
 }
@@ -155,16 +162,16 @@ CMesh CModel::ProcessModelMesh(aiMesh* mesh, const aiScene* scene)
     // normal: texture_normalN
 
     // 1. diffuse maps
-    std::vector<Texture> diffuseMaps = CTexture::LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", "Model");
+    std::vector<Texture> diffuseMaps = CTexture::LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", CUtil::g_Directory);
     textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
     // 2. specular maps
-    std::vector<Texture> specularMaps = CTexture::LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", "Model");
+    std::vector<Texture> specularMaps = CTexture::LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", CUtil::g_Directory);
     textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
     // 3. normal maps
-    std::vector<Texture> normalMaps = CTexture::LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal", "Model");
+    std::vector<Texture> normalMaps = CTexture::LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal", CUtil::g_Directory);
     textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
     // 4. height maps
-    std::vector<Texture> heightMaps = CTexture::LoadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height", "Model");
+    std::vector<Texture> heightMaps = CTexture::LoadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height", CUtil::g_Directory);
     textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
     // return a mesh object created from the extracted mesh data

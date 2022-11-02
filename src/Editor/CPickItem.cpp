@@ -7,12 +7,13 @@
 #include "CWindow.h"
 #include "CPickItem.h"
 
-std::vector<std::tuple<CMesh*, Vertex*>> CPickItem::g_ClickedObject;
+std::vector<CPickItem::stIntersect> CPickItem::g_ClickedObject;
 
 CPickItem g_PickItem;
 
 CPickItem::CPickItem() : CEvent()
 {
+    m_LastEditorType = -1;
 }
 
 void CPickItem::ProcessMouseDragEvent(GLFWwindow* window, float xoffset, float yoffset)
@@ -22,16 +23,30 @@ void CPickItem::ProcessMouseDragEvent(GLFWwindow* window, float xoffset, float y
         xoffset *= 0.01f;
         yoffset *= 0.01f;
 
-        for (auto& it : g_ClickedObject)
-        {
-            CMesh* mesh = std::get<0>(it);
-            Vertex* vertex = std::get<1>(it);
+        if (CUtil::m_EditorType == 3)
+        { // Move Objects.
+            for (CMesh& mesh : CModel::g_SelectedModel->m_Meshes)
+            {
+                for (Vertex& v : mesh.m_Vertex)
+                {
+                    v.Position.x += xoffset;
+                    v.Position.y += yoffset;
+                }
 
-            vertex->Position.x += xoffset;
-            vertex->Position.y += yoffset;
-            mesh->AllocBuffer();
+                mesh.AllocBuffer();
+            }
+        }
+        else
+        {
+            for (stIntersect& it : g_ClickedObject)
+            {
+                it.m_Vertex->Position.x += xoffset;
+                it.m_Vertex->Position.y += yoffset;
+                it.m_Mesh->AllocBuffer();
+            }
         }
     }
+
 }
 
 void CPickItem::ProcessMouseButtonEvent(GLFWwindow* window, int button, int action, int mods)
@@ -40,202 +55,143 @@ void CPickItem::ProcessMouseButtonEvent(GLFWwindow* window, int button, int acti
     {
         if (action == GLFW_PRESS)
         {
-            if (CUtil::m_EditorType == 1)
-            { // Create Vertices.
+            if (m_LastEditorType == -1)
+                m_LastEditorType = CUtil::m_EditorType;
 
+            if (m_LastEditorType != CUtil::m_EditorType)
+            {
+                g_ClickedObject.clear();
+                m_LastEditorType = CUtil::m_EditorType;
             }
 
-            double xpos, ypos;
-            glfwGetCursorPos(window, &xpos, &ypos);
+            stIntersect in;
 
-            glm::vec2 fC(xpos, ypos);
-            glm::vec2 ndc = ((glm::vec2(fC.x / static_cast<float>(g_WindowMaxX), 1.0 - fC.y / static_cast<float>(g_WindowMaxY)) * 2.0f) - 1.0f);
-
-            bool findedSphere = false;
-            bool findedTriangle = false;
-
-            if (CUtil::m_EditorType == 0 || CUtil::m_EditorType == 2)
-            {
-                for (CModel* it : CWindow::GetModels())
+            if (CUtil::m_EditorType == 0)
+            { // Move Vertices and Faces.
+                if (IntersectSphere(in))
+                    g_ClickedObject.push_back(in);
+                else if (IntersectSurface(in))
                 {
-                    glm::mat4 mvp = (CWindow::GetVP() * it->GetModelPos());
-                    glm::mat4 worldPosition = glm::inverse(mvp);
+                    Vertex* A = &in.m_Mesh->m_Vertex[in.m_Indices[0]];
+                    Vertex* B = &in.m_Mesh->m_Vertex[in.m_Indices[1]];
+                    Vertex* C = &in.m_Mesh->m_Vertex[in.m_Indices[2]];
 
-                    glm::vec4 from = (worldPosition * glm::vec4(ndc, -1.0f, 1.0f));
-                    glm::vec4 to = (worldPosition * glm::vec4(ndc, 1.0f, 1.0f));
+                    auto addVertexInClickedObj = [](stIntersect& in, Vertex* v) {
+                        bool finded = false;
 
-                    from /= from.w; //perspective divide ("normalize" homogeneous coordinates)
-                    to /= to.w;
-
-                    glm::vec3 direction = (glm::vec3(to) - glm::vec3(from));
-                    float minDistOfSphere = 9999999.f;
-
-                    for (CMesh& mesh : it->m_Meshes)
-                    {
-                        for (Vertex& v : mesh.m_Vertex)
+                        for (const stIntersect& it : g_ClickedObject)
                         {
-                            float t1, t2;
-
-                            if (CUtil::IntersectSphere((glm::vec3(from) - v.Position), direction, 0.10f, t1, t2))
+                            if (v == it.m_Vertex)
                             {
-                                if (t1 < minDistOfSphere)
-                                {
-                                    g_ClickedObject.push_back(std::make_tuple(&mesh, &v));
-
-                                    findedSphere = true;
-                                    minDistOfSphere = t1;
-                                }
+                                finded = true;
+                                break;
                             }
                         }
-                    }
+
+                        if (!finded)
+                        {
+                            in.m_Vertex = v;
+                            g_ClickedObject.push_back(in);
+                        }
+                    };
+
+                    addVertexInClickedObj(in, A);
+                    addVertexInClickedObj(in, B);
+                    addVertexInClickedObj(in, C);
                 }
-            }
-
-            if (findedSphere && CUtil::m_EditorType == 2)
-            { // Remove vertices.
-                for (auto& it : g_ClickedObject)
+                else
                 {
-                    CMesh* mesh = std::get<0>(it);
-                    Vertex* vertex = std::get<1>(it);
+                    g_ClickedObject.clear();
 
-                    const auto itr = std::find(mesh->m_Vertex.begin(), mesh->m_Vertex.end(), *vertex);
-                    int vertexId = std::distance(mesh->m_Vertex.begin(), itr);
+                    if (IntersectSphere(in, false) || IntersectSurface(in, false))
+                        CModel::g_SelectedModel = in.m_Model;
+                }
+
+                return;
+            }
+            else if (CUtil::m_EditorType == 1)
+            { // Create Vertices.
+                if (IntersectSurface(in))
+                    CreateVertice(in);
+                else if (IntersectSurface(in, false))
+                    CModel::g_SelectedModel = in.m_Model;
+
+                return;
+            }
+            else if (CUtil::m_EditorType == 2)
+            { // Remove Vertices.
+                if (IntersectSphere(in))
+                {
+                    const auto itr = std::find(in.m_Mesh->m_Vertex.begin(), in.m_Mesh->m_Vertex.end(), *in.m_Vertex);
+                    int vertexId = std::distance(in.m_Mesh->m_Vertex.begin(), itr);
 
                     std::vector<unsigned int> newIndices;
 
-                    for (unsigned int id = 0; id < mesh->m_Indices.size(); id += 3)
+                    for (unsigned int id = 0; id < in.m_Mesh->m_Indices.size(); id += 3)
                     {
-                        if (mesh->m_Indices[id] != vertexId && mesh->m_Indices[id + 1] != vertexId && mesh->m_Indices[id + 2] != vertexId)
+                        if (in.m_Mesh->m_Indices[id] != vertexId && in.m_Mesh->m_Indices[id + 1] != vertexId && in.m_Mesh->m_Indices[id + 2] != vertexId)
                         {
-                            newIndices.push_back(mesh->m_Indices[id]);
-                            newIndices.push_back(mesh->m_Indices[id + 1]);
-                            newIndices.push_back(mesh->m_Indices[id + 2]);
+                            newIndices.push_back(in.m_Mesh->m_Indices[id]);
+                            newIndices.push_back(in.m_Mesh->m_Indices[id + 1]);
+                            newIndices.push_back(in.m_Mesh->m_Indices[id + 2]);
                         }
                     }
 
-                    mesh->m_Indices = newIndices;
-                    //mesh->m_Vertex.erase(itr);
-                    mesh->AllocBuffer();
+                    in.m_Mesh->m_Indices = newIndices;
+                    in.m_Mesh->AllocBuffer();
                 }
+                else if (IntersectSurface(in, false))
+                    CModel::g_SelectedModel = in.m_Model;
             }
-            else if (!findedSphere || CUtil::m_EditorType == 1)
-            {
-                glm::vec3 outIntersectionPoint;
-                int minDistOfSurface = 9999999;
-
-                CMesh* mesh = NULL;
-                unsigned int* indices = NULL;
-
-                for (CModel* it : CWindow::GetModels())
-                {
-                    glm::mat4 mvp = (CWindow::GetVP() * it->GetModelPos());
-                    glm::mat4 worldPosition = glm::inverse(mvp);
-
-                    glm::vec4 from = (worldPosition * glm::vec4(ndc, -1.0f, 1.0f));
-                    glm::vec4 to = (worldPosition * glm::vec4(ndc, 1.0f, 1.0f));
-
-                    from /= from.w; //perspective divide ("normalize" homogeneous coordinates)
-                    to /= to.w;
-
-                    glm::vec3 direction = (glm::vec3(to) - glm::vec3(from));
-
-                    for (CMesh& itmesh : it->m_Meshes)
-                    {
-                        for (unsigned int id = 0; id < itmesh.m_Indices.size(); id += 3)
-                        {
-                            glm::vec3 triangule[3];
-                            triangule[0] = itmesh.m_Vertex[itmesh.m_Indices[id]].Position;
-                            triangule[1] = itmesh.m_Vertex[itmesh.m_Indices[id + 1]].Position;
-                            triangule[2] = itmesh.m_Vertex[itmesh.m_Indices[id + 2]].Position;
-
-                            if (CUtil::RayIntersectsTriangle(glm::vec3(from), glm::vec3(to), triangule, outIntersectionPoint))
-                            {
-                                glm::vec3 diff = (glm::vec3(from) - outIntersectionPoint);
-
-                                int dist = (int)sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
-                                if (dist < minDistOfSurface)
-                                {
-                                    mesh = &itmesh;
-                                    indices = &itmesh.m_Indices[id];
-
-                                    minDistOfSurface = dist;
-                                    findedTriangle = true;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (mesh && indices)
-                {
-                    if (CUtil::m_EditorType == 1)
-                    {
-                        const Vertex& A = mesh->m_Vertex[indices[0]];
-                        const Vertex& B = mesh->m_Vertex[indices[1]];
-                        const Vertex& C = mesh->m_Vertex[indices[2]];
-
-                        Vertex centerOfTriangle; centerOfTriangle.Clear();
-                        centerOfTriangle.Position = (glm::vec3((A.Position + B.Position + C.Position) / 3.f));
-                        centerOfTriangle.TexCoords = (glm::vec2((A.TexCoords + B.TexCoords + C.TexCoords) / 3.f));
-
-                        int vertexId = mesh->m_Vertex.size();
-                        mesh->m_Vertex.push_back(centerOfTriangle);
-
-                        unsigned int prevA = indices[0];
-                        unsigned int prevB = indices[1];
-                        unsigned int prevC = indices[2];
-
-                        // A, B, G
-                        indices[2] = vertexId;
-
-                        // A, G, C
-                        mesh->m_Indices.push_back(prevA);
-                        mesh->m_Indices.push_back(vertexId);
-                        mesh->m_Indices.push_back(prevC);
-
-                        // B, C, G
-                        mesh->m_Indices.push_back(prevB);
-                        mesh->m_Indices.push_back(prevC);
-                        mesh->m_Indices.push_back(vertexId);
-
-                        mesh->AllocBuffer();
-                    }
-                    else
-                    {
-                        Vertex* A = &mesh->m_Vertex[indices[0]];
-                        Vertex* B = &mesh->m_Vertex[indices[1]];
-                        Vertex* C = &mesh->m_Vertex[indices[2]];
-
-                        auto addVertexInClickedObj = [](CMesh* m, Vertex* v) {
-                            bool finded = false;
-
-                            for (const std::tuple<CMesh*, Vertex*> it : g_ClickedObject)
-                            {
-                                if (v == std::get<1>(it))
-                                {
-                                    finded = true;
-                                    break;
-                                }
-                            }
-
-                            if (!finded)
-                                g_ClickedObject.push_back(std::make_tuple(m, v));
-                        };
-
-                        addVertexInClickedObj(mesh, A);
-                        addVertexInClickedObj(mesh, B);
-                        addVertexInClickedObj(mesh, C);
-                    }
-                }
-            }
-
-            if (!findedSphere && !findedTriangle)
+            else if (CUtil::m_EditorType == 3)
+            { // Move Objects.
                 g_ClickedObject.clear();
+
+                if (IntersectSphere(in) || IntersectSurface(in))
+                    g_ClickedObject.push_back(in);
+                else if (IntersectSurface(in, false))
+                    CModel::g_SelectedModel = in.m_Model;
+
+                return;
+            }
         }
         else if (action == GLFW_RELEASE)
         {
         }
     }
+}
+
+void CPickItem::CreateVertice(stIntersect& in)
+{
+    const Vertex& A = in.m_Mesh->m_Vertex[in.m_Indices[0]];
+    const Vertex& B = in.m_Mesh->m_Vertex[in.m_Indices[1]];
+    const Vertex& C = in.m_Mesh->m_Vertex[in.m_Indices[2]];
+
+    Vertex centerOfTriangle; centerOfTriangle.Clear();
+    centerOfTriangle.Position = (glm::vec3((A.Position + B.Position + C.Position) / 3.f));
+    centerOfTriangle.TexCoords = (glm::vec2((A.TexCoords + B.TexCoords + C.TexCoords) / 3.f));
+
+    int vertexId = in.m_Mesh->m_Vertex.size();
+    in.m_Mesh->m_Vertex.push_back(centerOfTriangle);
+
+    unsigned int prevA = in.m_Indices[0];
+    unsigned int prevB = in.m_Indices[1];
+    unsigned int prevC = in.m_Indices[2];
+
+    // A, B, G
+    in.m_Indices[2] = vertexId;
+
+    // A, G, C
+    in.m_Mesh->m_Indices.push_back(prevA);
+    in.m_Mesh->m_Indices.push_back(vertexId);
+    in.m_Mesh->m_Indices.push_back(prevC);
+
+    // B, C, G
+    in.m_Mesh->m_Indices.push_back(prevB);
+    in.m_Mesh->m_Indices.push_back(prevC);
+    in.m_Mesh->m_Indices.push_back(vertexId);
+
+    in.m_Mesh->AllocBuffer();
 }
 
 bool CPickItem::IntersectSphere(stIntersect& out, bool onlySelected)
@@ -252,6 +208,8 @@ bool CPickItem::IntersectSphere(stIntersect& out, bool onlySelected)
     {
         if (onlySelected)
             it = CModel::g_SelectedModel;
+        else if (it == CModel::g_SelectedModel)
+            continue;
 
         glm::mat4 mvp = (CWindow::GetVP() * it->GetModelPos());
         glm::mat4 worldPosition = glm::inverse(mvp);
@@ -311,6 +269,8 @@ bool CPickItem::IntersectSurface(stIntersect& out, bool onlySelected)
     {
         if (onlySelected)
             it = CModel::g_SelectedModel;
+        else if (it == CModel::g_SelectedModel)
+            continue;
 
         glm::mat4 mvp = (CWindow::GetVP() * it->GetModelPos());
         glm::mat4 worldPosition = glm::inverse(mvp);
