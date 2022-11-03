@@ -46,6 +46,22 @@ CCamera::~CCamera()
 {
 }
 
+void CCamera::ProcessSecTimer()
+{
+#ifdef _DEBUG
+    static time_t s_LastShowCamPosition = 0;
+    time_t rawnow = time(0);
+
+    if (s_LastShowCamPosition < rawnow)
+    {
+        printf("Pos %.2f,%.2f,%.2f\n", m_Position.x, m_Position.y, m_Position.z);
+        s_LastShowCamPosition = rawnow + 10;
+    }
+
+    //printf("Pos %.2f,%.2f,%.2f WorldUp %.2f,%.2f,%.2f Yan %.2f Pitch %.2f Zoom %.2f\n", m_Position.x, m_Position.y, m_Position.z, m_WorldUp.x, m_WorldUp.y, m_WorldUp.z, m_Yaw, m_Pitch, m_Zoom);
+#endif
+}
+
 void CCamera::ProcessInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -84,8 +100,6 @@ void CCamera::ProcessMouseDragEvent(GLFWwindow* window, float xoffset, float yof
 
     // update Front, Right and Up Vectors using the updated Euler angles
     UpdateCameraVectors();
-
-    //printf("Pos %.2f,%.2f,%.2f WorldUp %.2f,%.2f,%.2f Yan %.2f Pitch %.2f Zoom %.2f\n", m_Position.x, m_Position.y, m_Position.z, m_WorldUp.x, m_WorldUp.y, m_WorldUp.z, m_Yaw, m_Pitch, m_Zoom);
 }
 
 void CCamera::ProcessMouseScroll(GLFWwindow* window, double _xoffset, double _yoffset)

@@ -51,7 +51,13 @@ const char* CUtil::m_FragmentShader = R"glsl(
     uniform int u_wireframe;
     uniform int u_wireframeColor;
     uniform float u_textcoord;
+
     uniform vec3 lightPos;
+    uniform vec3 lightPos2;
+    uniform vec3 lightPos3;
+    uniform vec3 lightColor;
+    uniform vec3 lightColor2;
+    uniform vec3 lightColor3;
     
     void main() {
         if (u_wireframe != 0) {
@@ -70,12 +76,12 @@ const char* CUtil::m_FragmentShader = R"glsl(
             
             // Light:
             vec3 norm = normalize(Normal);
-            vec3 lightDir = normalize(lightPos - FragPos);
-            float diff = max(dot(norm, lightDir), 0.0);
-            vec3 diffuse = diff * vec3(1, 1, 1);
+            vec3 diffuse = max(dot(norm, normalize(lightPos - FragPos)), 0.0) * lightColor;
+            vec3 diffuse2 = max(dot(norm, normalize(lightPos2 - FragPos)), 0.0) * lightColor2;
+            vec3 diffuse3 = max(dot(norm, normalize(lightPos3 - FragPos)), 0.0) * lightColor3;
             
             // Ambient Color:
-            FragColor = vec4(diffuse, 1) * objectColor;
+            FragColor = vec4(diffuse + diffuse2 + diffuse3, 1) * objectColor;
         }
     }
 )glsl";

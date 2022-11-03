@@ -11,6 +11,8 @@ CMesh::CMesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int
     m_Indices = indices;
     m_Textures = textures;
 
+    CalculateNormals();
+
     // Generate Buffers.
     glGenVertexArrays(1, &m_VAOId);
     glGenBuffers(1, &m_VBOId);
@@ -85,17 +87,20 @@ void CMesh::CalculateNormals() {
 
         auto computeFaceNormal = [](glm::vec3 p1, glm::vec3 p2, glm::vec3 p3) {
             // Uses p2 as a new origin for p1,p3
-            auto a = p3 - p2;
-            auto b = p1 - p2;
+            glm::vec3 a = p2 - p1;
+            glm::vec3 b = p3 - p1;
             // Compute the cross product a X b to get the face normal
-            return glm::normalize(glm::cross(a, b));
+            glm::vec3 c = glm::cross(a, b);
+            glm::vec3 n = glm::normalize(c);
+            return n;
         };
 
         glm::vec3 normal = computeFaceNormal(A, B, C);
 
-        m_Vertex[m_Indices[i]].Normal += normal;
-        m_Vertex[m_Indices[i + 1]].Normal += normal;
-        m_Vertex[m_Indices[i + 2]].Normal += normal;
+        // Fix duplicate vertices.
+        for (unsigned int ii = 0; ii < m_Vertex.size(); ++ii)
+            if (m_Vertex[ii].Position == A || m_Vertex[ii].Position == B || m_Vertex[ii].Position == C)
+                m_Vertex[ii].Normal += normal;
     }
 
     // Normalize each normal

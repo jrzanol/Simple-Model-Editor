@@ -122,8 +122,19 @@ bool CWindow::Render()
     glUniformMatrix4fv(glGetUniformLocation(m_ProgramId, "u_vp"), 1, GL_FALSE, glm::value_ptr(m_VP));
 
     // Lights.
-    static glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
-    glUniform3fv(glGetUniformLocation(m_ProgramId, "lightPos"), 1, glm::value_ptr(lightPos));
+    static glm::vec3 s_LightPos = glm::vec3(5.02f, -0.18f, 0.24f);
+    static glm::vec3 s_LightPos2 = glm::vec3(-3.17f, 0.63f, 3.1f);
+    static glm::vec3 s_LightPos3 = glm::vec3(0.13f, 8.1f, -0.26f);
+    static glm::vec3 s_LightColor = glm::vec3(1.f, 1.f, 1.f);
+    static glm::vec3 s_LightColor2 = glm::vec3(1.f, 0.f, 0.f);
+    static glm::vec3 s_LightColor3 = glm::vec3(0.f, 1.f, 0.f);
+
+    glUniform3fv(glGetUniformLocation(m_ProgramId, "lightPos"), 1, glm::value_ptr(s_LightPos));
+    glUniform3fv(glGetUniformLocation(m_ProgramId, "lightPos2"), 1, glm::value_ptr(s_LightPos2));
+    glUniform3fv(glGetUniformLocation(m_ProgramId, "lightPos3"), 1, glm::value_ptr(s_LightPos3));
+    glUniform3fv(glGetUniformLocation(m_ProgramId, "lightColor"), 1, glm::value_ptr(s_LightColor));
+    glUniform3fv(glGetUniformLocation(m_ProgramId, "lightColor2"), 1, glm::value_ptr(s_LightColor2));
+    glUniform3fv(glGetUniformLocation(m_ProgramId, "lightColor3"), 1, glm::value_ptr(s_LightColor3));
     
     // Draw objects.
     for (const auto& it : m_DrawModel)

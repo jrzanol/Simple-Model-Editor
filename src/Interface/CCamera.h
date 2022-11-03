@@ -11,6 +11,7 @@ public:
 	CCamera();
 	~CCamera();
 
+	void ProcessSecTimer();
 	void ProcessInput(GLFWwindow*);
 
 	void ProcessMouseButtonEvent(GLFWwindow*, int, int, int);
