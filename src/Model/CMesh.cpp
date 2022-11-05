@@ -108,7 +108,7 @@ void CMesh::CalculateNormals() {
         m_Vertex[i].Normal = glm::normalize(m_Vertex[i].Normal);
 }
 
-void CMesh::Draw(GLuint programId) const
+void CMesh::Draw(GLuint programId, unsigned int curTexture) const
 {
     if (m_Indices.size() == 0)
         return;
@@ -120,29 +120,31 @@ void CMesh::Draw(GLuint programId) const
         unsigned int normalNr = 1;
         unsigned int heightNr = 1;
 
-        for (size_t i = 0; i < m_Textures.size(); ++i)
-        {
-            // Ativa a Textura atual a ser renderizada.
-            glActiveTexture(GL_TEXTURE0 + i);
+        size_t i = curTexture;
 
-            std::string number;
-            std::string name = m_Textures[i].m_Type;
+        if (i >= m_Textures.size())
+            i = 0;
 
-            if (name == "texture_diffuse")
-                number = std::to_string(diffuseNr++);
-            else if (name == "texture_specular")
-                number = std::to_string(specularNr++);
-            else if (name == "texture_normal")
-                number = std::to_string(normalNr++);
-            else if (name == "texture_height")
-                number = std::to_string(heightNr++);
+        // Ativa a Textura atual a ser renderizada.
+        glActiveTexture(GL_TEXTURE0 + i);
 
-            // now set the sampler to the correct texture unit
-            glUniform1i(glGetUniformLocation(programId, (name + number).c_str()), i);
+        std::string number;
+        std::string name = m_Textures[i].m_Type;
 
-            // and finally bind the texture
-            glBindTexture(GL_TEXTURE_2D, m_Textures[i].m_Id);
-        }
+        if (name == "texture_diffuse")
+            number = std::to_string(diffuseNr++);
+        else if (name == "texture_specular")
+            number = std::to_string(specularNr++);
+        else if (name == "texture_normal")
+            number = std::to_string(normalNr++);
+        else if (name == "texture_height")
+            number = std::to_string(heightNr++);
+
+        // now set the sampler to the correct texture unit
+        glUniform1i(glGetUniformLocation(programId, (name + number).c_str()), i);
+
+        // and finally bind the texture
+        glBindTexture(GL_TEXTURE_2D, m_Textures[i].m_Id);
     }
 
     // Bind buffer vector of object.

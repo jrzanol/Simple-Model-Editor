@@ -4,8 +4,9 @@
 #pragma once
 
 #include "CEvent.h"
+#include "CAnimation.h"
 
-class CCamera : CEvent
+class CCamera : CAnimation
 {
 public:
 	CCamera();
@@ -22,10 +23,16 @@ public:
 
 	// Returns the view matrix calculated using Euler Angles and the LookAt Matrix.
 	glm::mat4 GetViewMatrix();
+	glm::vec3* GetPosition() { return &m_Position; }
+
+	const char* ToString() const;
+	void SetAnimation(bool = true);
 
 	float m_Zoom;
 
 private:
+	int m_CamId;
+
 	// Camera Attributes.
 	glm::vec3 m_Position;
 	glm::vec3 m_Front;

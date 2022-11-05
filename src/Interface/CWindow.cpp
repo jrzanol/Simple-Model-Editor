@@ -121,20 +121,9 @@ bool CWindow::Render()
     m_VP = (projection * view);
     glUniformMatrix4fv(glGetUniformLocation(m_ProgramId, "u_vp"), 1, GL_FALSE, glm::value_ptr(m_VP));
 
-    // Lights.
-    static glm::vec3 s_LightPos = glm::vec3(5.02f, -0.18f, 0.24f);
-    static glm::vec3 s_LightPos2 = glm::vec3(-3.17f, 0.63f, 3.1f);
-    static glm::vec3 s_LightPos3 = glm::vec3(0.13f, 8.1f, -0.26f);
-    static glm::vec3 s_LightColor = glm::vec3(1.f, 1.f, 1.f);
-    static glm::vec3 s_LightColor2 = glm::vec3(1.f, 0.f, 0.f);
-    static glm::vec3 s_LightColor3 = glm::vec3(0.f, 1.f, 0.f);
-
-    glUniform3fv(glGetUniformLocation(m_ProgramId, "lightPos"), 1, glm::value_ptr(s_LightPos));
-    glUniform3fv(glGetUniformLocation(m_ProgramId, "lightPos2"), 1, glm::value_ptr(s_LightPos2));
-    glUniform3fv(glGetUniformLocation(m_ProgramId, "lightPos3"), 1, glm::value_ptr(s_LightPos3));
-    glUniform3fv(glGetUniformLocation(m_ProgramId, "lightColor"), 1, glm::value_ptr(s_LightColor));
-    glUniform3fv(glGetUniformLocation(m_ProgramId, "lightColor2"), 1, glm::value_ptr(s_LightColor2));
-    glUniform3fv(glGetUniformLocation(m_ProgramId, "lightColor3"), 1, glm::value_ptr(s_LightColor3));
+    // Draw Lights.
+    for (const auto& it : m_Light)
+        it.Draw(m_ProgramId);
     
     // Draw objects.
     for (const auto& it : m_DrawModel)
@@ -151,6 +140,7 @@ bool CWindow::Render()
         ImGui::RadioButton("Criar Vertices", &CUtil::m_EditorType, 1);
         ImGui::RadioButton("Remover Vertices", &CUtil::m_EditorType, 2);
         ImGui::RadioButton("Mover Objetos", &CUtil::m_EditorType, 3);
+        ImGui::RadioButton("Criar Curva", &CUtil::m_EditorType, 4);
         ImGui::Separator();
         ImGui::RadioButton("Textura Padrao", &CModel::g_SelectedModel->m_SelectedTexture, 0);
         ImGui::RadioButton("Textura #02", &CModel::g_SelectedModel->m_SelectedTexture, 1);
@@ -173,9 +163,110 @@ bool CWindow::Render()
         if (ImGui::Button("Criar Modelo #1"))
             CreateModel(0, "Model/main.obj");
         if (ImGui::Button("Criar Modelo #2"))
-            CreateModel(1, "Model2/main.obj", "Model2");
+            CreateModel(1, "Model2/main.obj");
         if (ImGui::Button("Criar Modelo #3"))
-            CreateModel(2, "Model3/main.obj", "Model3");
+            CreateModel(2, "Model3/main.obj");
+        ImGui::Separator();
+        if (CModel::g_SelectedModel->GetAnimation())
+        {
+            if (ImGui::Button("Pausar Animacao"))
+                CModel::g_SelectedModel->SetAnimation(false);
+        }
+        else
+        {
+            if (ImGui::Button("Ativar Animacao"))
+                CModel::g_SelectedModel->SetAnimation();
+        }
+        ImGui::Separator();
+        ImGui::Text("Modelos:");
+        static bool s_AllAniAtived = false;
+        if (s_AllAniAtived)
+        {
+            if (ImGui::Button("Desativar Animacoes"))
+            {
+                for (auto& it : CWindow::GetModels())
+                    it->SetAnimation(false);
+
+                s_AllAniAtived = false;
+            }
+        }
+        else
+        {
+            if (ImGui::Button("Ativar todas Animacoes"))
+            {
+                for (auto& it : CWindow::GetModels())
+                    it->SetAnimation();
+
+                s_AllAniAtived = true;
+            }
+        }
+        ImGui::Separator();
+        ImGui::Text("Cameras:");
+        static bool s_AllCamAniAtived = false;
+        if (s_AllCamAniAtived)
+        {
+            if (ImGui::Button("Desativar Animacoes [Cam]"))
+            {
+                for (auto& it : m_Camera)
+                    it.SetAnimation(false);
+
+                s_AllCamAniAtived = false;
+            }
+        }
+        else
+        {
+            if (ImGui::Button("Ativar Animacoes [Cam]"))
+            {
+                for (auto& it : m_Camera)
+                    it.SetAnimation();
+
+                s_AllCamAniAtived = true;
+            }
+        }
+        ImGui::Separator();
+        ImGui::Text("Cameras:");
+        static bool s_AllLightAniAtived = false;
+        if (s_AllLightAniAtived)
+        {
+            if (ImGui::Button("Desativar Animacoes [Light]"))
+            {
+                for (auto& it : m_Light)
+                    it.SetAnimation(false);
+
+                s_AllLightAniAtived = false;
+            }
+        }
+        else
+        {
+            if (ImGui::Button("Ativar Animacoes [Light]"))
+            {
+                for (auto& it : m_Light)
+                    it.SetAnimation();
+
+                s_AllLightAniAtived = true;
+            }
+        }
+        ImGui::Separator();
+        if (ImGui::Button("Salvar Cena"))
+        {
+            FILE* out = fopen("Scene.txt", "wt");
+            if (out)
+            {
+                for (const auto& it : m_Camera)
+                    fprintf(out, "%s\n", it.ToString());
+
+                for (const auto& it : m_Light)
+                    fprintf(out, "%s\n", it.ToString());
+
+                for (const auto& it : m_DrawModel)
+                    fprintf(out, "%s\n", it->ToString());
+
+                fclose(out);
+            }
+
+            ImGui::SameLine();
+            ImGui::Text("Salvo!");
+        }
     ImGui::End();
 
     // Rendering the ImGui.
@@ -195,26 +286,30 @@ bool CWindow::Render()
     return glfwWindowShouldClose(g_Window);
 }
 
-void CWindow::CreateModel(int type, const char* fileModel, const char* dir)
+void CWindow::CreateModel(int type, const char* fileModel)
 {
     static int s_ModelCounter = 0;
 
-    strcpy(CUtil::g_Directory, dir);
-
     CModel* m = CModel::LoadModel(fileModel);
-    m->m_Position = glm::vec3(0.f, 0.f, -5.f * s_ModelCounter++);
+    glm::vec3* pos = m->GetPosition();
+
+    int xmul = (s_ModelCounter / 7);
+    int zmul = (s_ModelCounter % 7);
+
+    *pos = glm::vec3(5.f * xmul, 0.f, -5.f * zmul);
 
     if (type == 1)
     {
-        m->m_Position.y = -1.f;
+        pos->y = -1.f;
         m->m_Scale = glm::vec3(5.f, 5.f, 5.f);
     }
     else if (type == 2)
     {
-        m->m_Position.y = 0.75f;
+        pos->y = 0.75f;
         m->m_Scale = glm::vec3(0.5f, 0.5f, 0.5f);
     }
 
+    s_ModelCounter++;
     m_DrawModel.push_back(m);
 }
 

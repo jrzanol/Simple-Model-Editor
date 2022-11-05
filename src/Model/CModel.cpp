@@ -11,7 +11,7 @@ CModel CModel::g_List[MAX_OBJECT];
 
 CModel* CModel::g_SelectedModel = NULL;
 
-CModel::CModel()
+CModel::CModel() : CAnimation()
 {
     m_Position = glm::vec3(0.f, 0.f, 0.f);
     m_Scale = glm::vec3(1.f, 1.f, 1.f);
@@ -19,6 +19,14 @@ CModel::CModel()
 
     m_TextCoord = 0.f;
     m_SelectedTexture = 0;
+}
+
+const char* CModel::ToString() const
+{
+    static char str[128];
+
+    sprintf(str, "Obj[%s] %.2f,%.2f,%.2f %.2f,%.2f,%.2f %.2f %d", m_ObjName.c_str(), m_Position.x, m_Position.y, m_Position.z, m_Scale.x, m_Scale.y, m_Scale.z, m_Angle, m_SelectedTexture);
+    return str;
 }
 
 void CModel::Draw(GLuint programId, const glm::mat4& vp) const
@@ -34,7 +42,20 @@ void CModel::Draw(GLuint programId, const glm::mat4& vp) const
     glUniformMatrix4fv(glGetUniformLocation(programId, "u_model"), 1, GL_FALSE, glm::value_ptr(model));
 
     for (const auto& it : m_Meshes)
-        it.Draw(programId);
+        it.Draw(programId, m_SelectedTexture);
+}
+
+bool CModel::GetAnimation()
+{
+    return m_AniAtived;
+}
+
+void CModel::SetAnimation(bool v)
+{
+    m_AniAtived = v;
+
+    if (m_AniAtived)
+        FixAnimation(true);
 }
 
 glm::mat4& CModel::GetModelPos() const
@@ -56,6 +77,7 @@ CModel* CModel::LoadModel(std::string file)
 
     CModel* obj = &g_List[g_ListCounter];
     obj->m_ObjName = file;
+    obj->m_ObjDir = file.substr(0, file.find('/'));
 
     Assimp::Importer importer;
 
@@ -68,6 +90,7 @@ CModel* CModel::LoadModel(std::string file)
 
     // process ASSIMP's root node recursively
     obj->ProcessModelNode(scene->mRootNode, scene);
+    obj->ReadAnimation(obj->m_ObjDir.c_str());
 
     if (g_SelectedModel == NULL)
         g_SelectedModel = obj;
@@ -162,16 +185,16 @@ CMesh CModel::ProcessModelMesh(aiMesh* mesh, const aiScene* scene)
     // normal: texture_normalN
 
     // 1. diffuse maps
-    std::vector<Texture> diffuseMaps = CTexture::LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", CUtil::g_Directory);
+    std::vector<Texture> diffuseMaps = CTexture::LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", m_ObjDir.c_str());
     textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
     // 2. specular maps
-    std::vector<Texture> specularMaps = CTexture::LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", CUtil::g_Directory);
+    std::vector<Texture> specularMaps = CTexture::LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", m_ObjDir.c_str());
     textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
     // 3. normal maps
-    std::vector<Texture> normalMaps = CTexture::LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal", CUtil::g_Directory);
+    std::vector<Texture> normalMaps = CTexture::LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal", m_ObjDir.c_str());
     textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
     // 4. height maps
-    std::vector<Texture> heightMaps = CTexture::LoadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height", CUtil::g_Directory);
+    std::vector<Texture> heightMaps = CTexture::LoadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height", m_ObjDir.c_str());
     textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
     // return a mesh object created from the extracted mesh data

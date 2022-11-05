@@ -7,7 +7,6 @@ class CUtil
 {
 public:
 	static int m_EditorType;
-	static char g_Directory[32];
 
 	static const char* m_VertexShader;
 	static const char* m_FragmentShader;

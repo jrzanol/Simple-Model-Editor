@@ -15,7 +15,7 @@ CCamera::CCamera()
     static int si_CameraCounter = 0;
     if (si_CameraCounter == 0)
     {
-        m_Position = glm::vec3(0.0f, 3.f, 12.f);
+        m_Position = glm::vec3(0.0f, 3.f, 7.f);
         m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
         m_Yaw = YAW;
         m_Pitch = PITCH;
@@ -38,12 +38,35 @@ CCamera::CCamera()
         m_Zoom = 45.f;
     }
 
+    m_CamId = si_CameraCounter;
     si_CameraCounter++;
+
     UpdateCameraVectors();
+
+    char prefix[16];
+    sprintf(prefix, "Cam%d", si_CameraCounter);
+
+    ReadAnimation(".", prefix);
 }
 
 CCamera::~CCamera()
 {
+}
+
+void CCamera::SetAnimation(bool v)
+{
+    m_AniAtived = v;
+
+    if (m_AniAtived)
+        FixAnimation(true);
+}
+
+const char* CCamera::ToString() const
+{
+    static char str[128];
+
+    sprintf(str, "Cam#%d %.2f,%.2f,%.2f %.2f,%.2f,%.2f", m_CamId + 1, m_Position.x, m_Position.y, m_Position.z, m_Yaw, m_Pitch, m_Zoom);
+    return str;
 }
 
 void CCamera::ProcessSecTimer()

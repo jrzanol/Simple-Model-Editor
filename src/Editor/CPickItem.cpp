@@ -25,15 +25,12 @@ void CPickItem::ProcessMouseDragEvent(GLFWwindow* window, float xoffset, float y
 
         if (CUtil::m_EditorType == 3)
         { // Move Objects.
-            for (CMesh& mesh : CModel::g_SelectedModel->m_Meshes)
+            for (stIntersect& it : g_ClickedObject)
             {
-                for (Vertex& v : mesh.m_Vertex)
-                {
-                    v.Position.x += xoffset;
-                    v.Position.y += yoffset;
-                }
+                glm::vec3* pos = it.m_Model->GetPosition();
 
-                mesh.AllocBuffer();
+                pos->x += xoffset;
+                pos->y += yoffset;
             }
         }
         else
@@ -106,8 +103,6 @@ void CPickItem::ProcessMouseButtonEvent(GLFWwindow* window, int button, int acti
                     if (IntersectSphere(in, false) || IntersectSurface(in, false))
                         CModel::g_SelectedModel = in.m_Model;
                 }
-
-                return;
             }
             else if (CUtil::m_EditorType == 1)
             { // Create Vertices.
@@ -115,8 +110,6 @@ void CPickItem::ProcessMouseButtonEvent(GLFWwindow* window, int button, int acti
                     CreateVertice(in);
                 else if (IntersectSurface(in, false))
                     CModel::g_SelectedModel = in.m_Model;
-
-                return;
             }
             else if (CUtil::m_EditorType == 2)
             { // Remove Vertices.
@@ -151,8 +144,52 @@ void CPickItem::ProcessMouseButtonEvent(GLFWwindow* window, int button, int acti
                     g_ClickedObject.push_back(in);
                 else if (IntersectSurface(in, false))
                     CModel::g_SelectedModel = in.m_Model;
+            }
+            else if (CUtil::m_EditorType == 4)
+            { // Criar Curva.
+                if (IntersectSurface(in))
+                {
+                    stIntersect in2 = in;
+                    bool finded = false;
 
-                return;
+                    const glm::vec3& A = in.m_Mesh->m_Vertex[in.m_Indices[0]].Position;
+                    const glm::vec3& B = in.m_Mesh->m_Vertex[in.m_Indices[1]].Position;
+                    const glm::vec3& C = in.m_Mesh->m_Vertex[in.m_Indices[2]].Position;
+
+                    for (unsigned int id = 0; id < in.m_Mesh->m_Indices.size(); id += 3)
+                    {
+                        const glm::vec3& A2 = in.m_Mesh->m_Vertex[in.m_Mesh->m_Indices[id]].Position;
+                        const glm::vec3& B2 = in.m_Mesh->m_Vertex[in.m_Mesh->m_Indices[id + 1]].Position;
+                        const glm::vec3& C2 = in.m_Mesh->m_Vertex[in.m_Mesh->m_Indices[id + 2]].Position;
+
+                        auto checkPosition = [&in](const glm::vec3& v) {
+                            for (int i = 0; i < 3; ++i)
+                                if (in.m_Mesh->m_Vertex[in.m_Mesh->m_Indices[i]].Position == v)
+                                    return true;
+
+                            return false;
+                        };
+
+                        if ((checkPosition(A) && checkPosition(B)) ^ (checkPosition(A) && checkPosition(C)) ^ (checkPosition(B) && checkPosition(C)))
+                        {
+                            in2.m_Indices = &in.m_Mesh->m_Indices[id];
+
+                            finded = true;
+                            break;
+                        }
+                    }
+
+                    printf("%d %d %d - ", in.m_Indices[0], in.m_Indices[1], in.m_Indices[2]);
+                    printf("%d %d %d\n", in2.m_Indices[0], in2.m_Indices[1], in2.m_Indices[2]);
+
+                    if (finded)
+                    {
+                        CreateVertice(in);
+                        CreateVertice(in2);
+                    }
+                }
+                else if (IntersectSurface(in, false))
+                    CModel::g_SelectedModel = in.m_Model;
             }
         }
         else if (action == GLFW_RELEASE)

@@ -4,20 +4,28 @@
 #pragma once
 
 #include "CMesh.h"
+#include "CAnimation.h"
 
 const int MAX_OBJECT = 128;
 
-class CModel
+class CModel : CAnimation
 {
 public:
 	CModel();
 
+	const char* ToString() const;
 	void Draw(GLuint, const glm::mat4&) const;
+
+	bool GetAnimation();
+	void SetAnimation(bool = true);
+
 	glm::mat4& GetModelPos() const;
+	glm::vec3* GetPosition() { return &m_Position; }
 
 	std::string m_ObjName;
+	std::string m_ObjDir;
 	std::vector<CMesh> m_Meshes;
-	glm::vec3 m_Position;
+	
 	glm::vec3 m_Scale;
 	float m_Angle;
 
@@ -30,6 +38,8 @@ public:
 	static CModel* g_SelectedModel;
 
 private:
+	glm::vec3 m_Position;
+
 	void ProcessModelNode(aiNode*, const aiScene*);
 	CMesh ProcessModelMesh(aiMesh*, const aiScene*);
 

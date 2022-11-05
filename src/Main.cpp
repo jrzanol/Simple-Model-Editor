@@ -19,6 +19,9 @@ int main(int argc, const char* argv[])
         g_DeltaTime = currentFrame - g_LastTime;
         g_LastTime = currentFrame;
 
+        for (const auto& it : *g_EventList)
+            it->ProcessMiliSecTimer();
+
         static int lastSecTimer = -1;
         static int lastMinTimer = -1;
 

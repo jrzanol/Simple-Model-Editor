@@ -8,6 +8,7 @@ class CEvent
 public:
 	CEvent();
 
+	virtual void ProcessMiliSecTimer() { }
 	virtual void ProcessSecTimer() { }
 	virtual void ProcessMinTimer() { }
 

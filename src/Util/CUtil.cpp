@@ -10,7 +10,6 @@ float g_DeltaTime = 0;
 float g_LastTime = 0;
 
 int CUtil::m_EditorType = 1;
-char CUtil::g_Directory[32];
 
 const char* CUtil::m_VertexShader = R"glsl(
     #version 430
@@ -80,8 +79,11 @@ const char* CUtil::m_FragmentShader = R"glsl(
             vec3 diffuse2 = max(dot(norm, normalize(lightPos2 - FragPos)), 0.0) * lightColor2;
             vec3 diffuse3 = max(dot(norm, normalize(lightPos3 - FragPos)), 0.0) * lightColor3;
             
+            float ambientStrength = 0.25f;
+            vec3 ambient = ambientStrength * lightColor;
+            
             // Ambient Color:
-            FragColor = vec4(diffuse + diffuse2 + diffuse3, 1) * objectColor;
+            FragColor = vec4(ambient + diffuse + diffuse2 + diffuse3, 1) * objectColor;
         }
     }
 )glsl";

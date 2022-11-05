@@ -42,7 +42,7 @@ class CMesh
 public:
 	CMesh(const std::vector<Vertex>&, const std::vector<unsigned int>&, const std::vector<Texture>&);
 
-	void Draw(GLuint) const;
+	void Draw(GLuint, unsigned int) const;
 	void AllocBuffer();
 
 	std::vector<Vertex> m_Vertex;

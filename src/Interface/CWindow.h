@@ -6,6 +6,7 @@
 #include "CUtil.h"
 #include "CCamera.h"
 #include "CModel.h"
+#include "CLight.h"
 
 class CWindow
 {
@@ -21,8 +22,9 @@ public:
 	static const std::list<CModel*>& GetModels();
 
 private:
+	CLight m_Light[3];
 	CCamera m_Camera[3];
-
+	
 	GLuint m_ProgramId;
 	GLuint m_PickingProgramId;
 
@@ -32,7 +34,7 @@ private:
 	static glm::mat4 m_VP;
 	static std::list<CModel*> m_DrawModel;
 
-	static void CreateModel(int, const char*, const char* = "Model");
+	static void CreateModel(int, const char*);
 	static void SaveModel();
 };
 
