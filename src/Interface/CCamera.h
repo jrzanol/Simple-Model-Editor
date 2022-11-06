@@ -12,6 +12,8 @@ public:
 	CCamera();
 	~CCamera();
 
+	void Reset(bool = true);
+
 	void ProcessSecTimer();
 	void ProcessInput(GLFWwindow*);
 
@@ -68,5 +70,7 @@ private:
 	const float SPEED = 2.5f;
 	const float SENSITIVITY = 0.1f;
 	const float ZOOM = 45.0f;
+
+	static int si_CameraCounter;
 };
 

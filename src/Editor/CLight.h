@@ -9,6 +9,7 @@ class CLight : CAnimation
 public:
 	CLight();
 
+	void Reset(bool = true);
 	void Draw(GLuint) const;
 
 	void SetAnimation(bool = true);
@@ -21,5 +22,7 @@ private:
 
 	glm::vec3 s_LightPos;
 	glm::vec3 s_LightColor;
+
+	static int s_LightCounter;
 };
 

@@ -21,6 +21,16 @@ CModel::CModel() : CAnimation()
     m_SelectedTexture = 0;
 }
 
+void CModel::Reset()
+{
+    g_ListCounter = 0;
+
+    for (int i = 0; i < MAX_OBJECT; ++i)
+        g_List[i] = CModel();
+
+    g_SelectedModel = NULL;
+}
+
 const char* CModel::ToString() const
 {
     static char str[128];

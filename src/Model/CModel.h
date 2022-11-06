@@ -35,6 +35,7 @@ public:
 	// Load File or Find Object.
 	static CModel* LoadModel(std::string);
 
+	static void Reset();
 	static CModel* g_SelectedModel;
 
 private:

@@ -135,38 +135,19 @@ bool CWindow::Render()
     ImGui::NewFrame();
 
     // Create ImGui Sliders.
-    ImGui::Begin("Infos:");
+    ImGui::Begin("Editor");
+        ImGui::Text("Modelo:");
         ImGui::RadioButton("Arrastar Vertices/Triangulos", &CUtil::m_EditorType, 0);
         ImGui::RadioButton("Criar Vertices", &CUtil::m_EditorType, 1);
         ImGui::RadioButton("Remover Vertices", &CUtil::m_EditorType, 2);
         ImGui::RadioButton("Mover Objetos", &CUtil::m_EditorType, 3);
         ImGui::RadioButton("Criar Curva", &CUtil::m_EditorType, 4);
-        ImGui::Separator();
-        ImGui::RadioButton("Textura Padrao", &CModel::g_SelectedModel->m_SelectedTexture, 0);
-        ImGui::RadioButton("Textura #02", &CModel::g_SelectedModel->m_SelectedTexture, 1);
-        ImGui::RadioButton("Textura #03", &CModel::g_SelectedModel->m_SelectedTexture, 2);
-        ImGui::Separator();
-        ImGui::RadioButton("Camera Padrao", &CCamera::m_CameraId, 0);
-        ImGui::RadioButton("Camera #02", &CCamera::m_CameraId, 1);
-        ImGui::RadioButton("Camera #03", &CCamera::m_CameraId, 2);
-        ImGui::Separator();
-        ImGui::SliderFloat("Mover a Textura", &CModel::g_SelectedModel->m_TextCoord, 0.f, 2.f);
-        ImGui::Separator();
-        if (ImGui::Button("Save"))
-        {
-            CWindow::SaveModel();
-
-            ImGui::SameLine();
-            ImGui::Text("Salvo!");
-        }
-        ImGui::Separator();
         if (ImGui::Button("Criar Modelo #1"))
             CreateModel(0, "Model/main.obj");
         if (ImGui::Button("Criar Modelo #2"))
             CreateModel(1, "Model2/main.obj");
         if (ImGui::Button("Criar Modelo #3"))
             CreateModel(2, "Model3/main.obj");
-        ImGui::Separator();
         if (CModel::g_SelectedModel->GetAnimation())
         {
             if (ImGui::Button("Pausar Animacao"))
@@ -177,8 +158,6 @@ bool CWindow::Render()
             if (ImGui::Button("Ativar Animacao"))
                 CModel::g_SelectedModel->SetAnimation();
         }
-        ImGui::Separator();
-        ImGui::Text("Modelos:");
         static bool s_AllAniAtived = false;
         if (s_AllAniAtived)
         {
@@ -201,7 +180,17 @@ bool CWindow::Render()
             }
         }
         ImGui::Separator();
-        ImGui::Text("Cameras:");
+        ImGui::Text("Textura:");
+        ImGui::RadioButton("Textura Padrao", &CModel::g_SelectedModel->m_SelectedTexture, 0);
+        ImGui::RadioButton("Textura #02", &CModel::g_SelectedModel->m_SelectedTexture, 1);
+        ImGui::RadioButton("Textura #03", &CModel::g_SelectedModel->m_SelectedTexture, 2);
+        ImGui::Text("Mover a Textura:");
+        ImGui::SliderFloat("+", &CModel::g_SelectedModel->m_TextCoord, 0.f, 2.f);
+        ImGui::Separator();
+        ImGui::Text("Camera:");
+        ImGui::RadioButton("Camera Padrao", &CCamera::m_CameraId, 0);
+        ImGui::RadioButton("Camera #02", &CCamera::m_CameraId, 1);
+        ImGui::RadioButton("Camera #03", &CCamera::m_CameraId, 2);
         static bool s_AllCamAniAtived = false;
         if (s_AllCamAniAtived)
         {
@@ -224,7 +213,7 @@ bool CWindow::Render()
             }
         }
         ImGui::Separator();
-        ImGui::Text("Cameras:");
+        ImGui::Text("Luz:");
         static bool s_AllLightAniAtived = false;
         if (s_AllLightAniAtived)
         {
@@ -247,6 +236,14 @@ bool CWindow::Render()
             }
         }
         ImGui::Separator();
+        ImGui::Text("Salvar:");
+        if (ImGui::Button("Salvar Modelo"))
+        {
+            CWindow::SaveModel();
+
+            ImGui::SameLine();
+            ImGui::Text("Salvo!");
+        }
         if (ImGui::Button("Salvar Cena"))
         {
             FILE* out = fopen("Scene.txt", "wt");

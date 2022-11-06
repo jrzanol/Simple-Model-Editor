@@ -51,6 +51,9 @@ void CAnimation::ProcessMiliSecTimer()
 
 void CAnimation::ReadAnimation(const char* dir, const char* prefix)
 {
+	m_Initialized = false;
+	m_Animation.clear();
+
 	char file[32];
 	sprintf(file, "%s/%sAni.txt", dir, prefix);
 

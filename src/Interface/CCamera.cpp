@@ -9,10 +9,22 @@
 #include "CPickItem.h"
 
 int CCamera::m_CameraId = 0;
+int CCamera::si_CameraCounter = 0;
 
 CCamera::CCamera()
 {
-    static int si_CameraCounter = 0;
+    Reset(false);
+}
+
+CCamera::~CCamera()
+{
+}
+
+void CCamera::Reset(bool resetCounter)
+{
+    if (resetCounter)
+        si_CameraCounter = 0;
+
     if (si_CameraCounter == 0)
     {
         m_Position = glm::vec3(0.0f, 3.f, 7.f);
@@ -47,10 +59,6 @@ CCamera::CCamera()
     sprintf(prefix, "Cam%d", si_CameraCounter);
 
     ReadAnimation(".", prefix);
-}
-
-CCamera::~CCamera()
-{
 }
 
 void CCamera::SetAnimation(bool v)

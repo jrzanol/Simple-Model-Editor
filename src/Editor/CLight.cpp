@@ -7,9 +7,18 @@
 #include "CWindow.h"
 #include "CLight.h"
 
+int CLight::s_LightCounter = 0;
+
 CLight::CLight() : CAnimation()
 {
-	static int s_LightCounter = 0;
+	Reset(false);
+}
+
+void CLight::Reset(bool resetCounter)
+{
+	if (resetCounter)
+		s_LightCounter = 0;
+
 	if (s_LightCounter == 0)
 	{
 		s_LightPos = glm::vec3(5.02f, -0.18f, 0.24f);
